@@ -53,3 +53,16 @@ dkms.conf
 
 # debug information files
 *.dwo
+*.vscode
+/verify/*
+*.odt
+*.odt#
+/test_c_prg/*
+/test_cpp_prg/*
+/*.PVS-Studio/*
+build/
+gentests/
+bin/
+runtests/
+*cache/*
+*test_scanf_*
