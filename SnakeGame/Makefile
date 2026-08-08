@@ -30,14 +30,14 @@ $(EXEC): $(OBJS)
 
 # Для Windows
 lib/libpdcurses.a:
-	curl -L -o PDCurses-3.9.tar.gz https://github.com
-	tar -xf PDCurses-3.9.tar.gz
-	mingw32-make -C PDCurses-3.9/wincon -f Makefile WIDE=Y
+	curl -L -o pdcurses.tar.gz https://github.com/wmcbrine/PDCurses
+	tar -xf pdcurses.tar.gz
+	mingw32-make -C PDCurses-3.9/wincon -f Makefile WIDE=Y UTF8=Y
 	mkdir include lib
 	cp PDCurses-3.9/curses.h include/curses.h
 	cp PDCurses-3.9/panel.h include/panel.h
 	cp PDCurses-3.9/wincon/pdcurses.a lib/libpdcurses.a
-	rm -rf PDCurses-3.9.tar.gz PDCurses-3.9
+	rm -rf pdcurses.tar.gz PDCurses-3.9
 
 # Установка ncurses для Linux
 linux_dep:
