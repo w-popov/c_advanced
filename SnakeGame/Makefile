@@ -30,9 +30,9 @@ $(EXEC): $(OBJS)
 
 # Для Windows
 lib/libpdcurses.a:
-	curl -L -o pdcurses.tar.gz https://github.com/wmcbrine/PDCurses
+	curl -L -o pdcurses.tar.gz https://github.com
 	tar -xf pdcurses.tar.gz
-	mingw32-make -C PDCurses-3.9/wincon -f Makefile WIDE=Y UTF8=Y
+	mingw32-make -C PDCurses-3.9/wincon -f Makefile WIDE=Y
 	mkdir include lib
 	cp PDCurses-3.9/curses.h include/curses.h
 	cp PDCurses-3.9/panel.h include/panel.h
