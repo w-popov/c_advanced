@@ -9,7 +9,7 @@ OBJS = $(SRCS:.c=.o)
 ifeq ($(OS),Windows_NT)
     EXEC = $(TARGET).exe
     CFLAGS += -Iinclude
-    LDFLAGS = -Llib -lpdcurses -lwinmm
+    LDFLAGS = -static -Llib -lpdcurses -lwinmm
     DEPENDENCY = lib/libpdcurses.a
 else
     EXEC = $(TARGET)
