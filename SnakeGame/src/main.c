@@ -22,13 +22,30 @@ int main(void)
     cbreak();
     curs_set(0);
     keypad(stdscr, TRUE);
-    set_escdelay(50);
+
+    #ifndef _WIN32
+    set_escdelay(50); 
+    #endif
 
     struct AppContext app;
     app_init(&app);
 
     while (app.is_running) 
     {
+        // Проверка изменения размеров терминала
+        #ifdef _WIN32
+        if (is_termresized()) 
+        {
+            resize_term(0, 0); 
+            if (app.screens.current_screen && app.screens.current_screen->clean) 
+            {
+                app.screens.current_screen->clean(&app);
+            }
+            clear(); 
+            continue; 
+        }
+        #endif
+
         if (app.screens.current_screen && app.screens.current_screen->render) 
         {
             app.screens.current_screen->render(&app);
@@ -105,3 +122,5 @@ int main(void)
     endwin();
     return 0;
 }
+
+// git pull origin main
