@@ -13,7 +13,7 @@ ifeq ($(OS),Windows_NT)
     DEPENDENCY = lib/libpdcurses.a
 else
     EXEC = $(TARGET)
-    LDFLAGS = -lncurses -lpthread
+    LDFLAGS = -lncursesw -lpthread
     DEPENDENCY = linux_dep
 endif
 
