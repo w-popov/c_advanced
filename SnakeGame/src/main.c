@@ -165,7 +165,7 @@ int main(void)
             }
         }
 
-        struct timespec ts = { .tv_sec = 0, .tv_nsec = 10000000 }; // 10 миллисекунд сна
+        struct timespec ts = { .tv_sec = 0, .tv_nsec = 10000000 }; // пауза
         thrd_sleep(&ts, NULL);
     }
 
