@@ -45,7 +45,7 @@ void generate_food(struct ScreenGamePlay *game)
         }
     } while (on_snake);
 
-    wcscpy(game->food.image, L"🍎"); 
+    game->food.image = L'★';
 }
 
 // Инициализация новой игровой сессии
@@ -74,14 +74,14 @@ void init_game_session(struct ScreenGamePlay *game, int max_game_w, int max_game
     game->snake.dir = DIR_RIGHT;
     game->snake.body[0].x = start_x;
     game->snake.body[0].y = start_y;
-
-    wcscpy(game->snake.body[0].image, L"●");
+    
+    game->snake.body[0].image = L'●';
 
     for (int i = 1; i < game->snake.length; ++i) 
     {
         game->snake.body[i].x = start_x - i;
         game->snake.body[i].y = start_y;
-        wcscpy(game->snake.body[i].image, L"○");
+        game->snake.body[i].image = L'○';
     }
 
     generate_food(game);
@@ -118,7 +118,7 @@ void update_snake_step(struct ScreenGamePlay *game)
         {
             game->snake.body[game->snake.length].x = old_tail_x;
             game->snake.body[game->snake.length].y = old_tail_y;
-            wcscpy(game->snake.body[game->snake.length].image, L"○");
+            game->snake.body[game->snake.length].image = L'○';
             game->snake.length++;
         }
 
@@ -369,7 +369,7 @@ void game_render(struct AppContext *app)
     if (game->food.x > 0 && game->food.x < win_w - 1 && game->food.y > 0 && game->food.y < game_h - 1) 
     {
         wmove(game->subwin_game, game->food.y, game->food.x);
-        waddwstr(game->subwin_game, game->food.image);
+        waddnwstr(game->subwin_game, &game->food.image, 1); 
     }
 
     for (int i = 0; i < game->snake.length; ++i) 
@@ -383,12 +383,12 @@ void game_render(struct AppContext *app)
             if (i == 0) 
             {
                 wattron(game->subwin_game, A_BOLD);
-                waddwstr(game->subwin_game, game->snake.body[i].image);
+                waddnwstr(game->subwin_game, &game->snake.body[i].image, 1);
                 wattroff(game->subwin_game, A_BOLD);
             } 
             else 
             {
-                waddwstr(game->subwin_game, game->snake.body[i].image);
+                waddnwstr(game->subwin_game, &game->snake.body[i].image, 1);
             }
         }
     }
