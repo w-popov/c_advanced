@@ -45,7 +45,7 @@ void generate_food(struct ScreenGamePlay *game)
         }
     } while (on_snake);
 
-    game->food.image = L'🍎'; 
+    wcscpy(game->food.image, L"🍎"); 
 }
 
 // Инициализация новой игровой сессии
@@ -53,7 +53,7 @@ void init_game_session(struct ScreenGamePlay *game, int max_game_w, int max_game
 {
     srand((unsigned int)time(NULL));
     game->score = 0;
-    game->delay_ms = 45;    // СКОРОСТЬ ЗМЕЙКИ
+    game->delay_ms = 85;    // СКОРОСТЬ ЗМЕЙКИ
 
     int max_y, max_x;
     getmaxyx(stdscr, max_y, max_x);
@@ -74,13 +74,14 @@ void init_game_session(struct ScreenGamePlay *game, int max_game_w, int max_game
     game->snake.dir = DIR_RIGHT;
     game->snake.body[0].x = start_x;
     game->snake.body[0].y = start_y;
-    game->snake.body[0].image = L'●';
+
+    wcscpy(game->snake.body[0].image, L"●");
 
     for (int i = 1; i < game->snake.length; ++i) 
     {
         game->snake.body[i].x = start_x - i;
         game->snake.body[i].y = start_y;
-        game->snake.body[i].image = L'○';
+        wcscpy(game->snake.body[i].image, L"○");
     }
 
     generate_food(game);
@@ -117,7 +118,7 @@ void update_snake_step(struct ScreenGamePlay *game)
         {
             game->snake.body[game->snake.length].x = old_tail_x;
             game->snake.body[game->snake.length].y = old_tail_y;
-            game->snake.body[game->snake.length].image = L'○';
+            wcscpy(game->snake.body[game->snake.length].image, L"○");
             game->snake.length++;
         }
 
@@ -357,7 +358,7 @@ void game_render(struct AppContext *app)
     wclear(game->subwin_status);
     box(game->subwin_status, 0, 0);
     wmove(game->subwin_status, 1, 2);
-    wchar_t status_buf[128]; // Фиксированный размер массива во избежание предупреждений
+    wchar_t status_buf[128];
     swprintf(status_buf, 128, L"Очки: %04d  |  [ESC] - Пауза", game->score);
     waddwstr(game->subwin_status, status_buf);
 
@@ -368,7 +369,7 @@ void game_render(struct AppContext *app)
     if (game->food.x > 0 && game->food.x < win_w - 1 && game->food.y > 0 && game->food.y < game_h - 1) 
     {
         wmove(game->subwin_game, game->food.y, game->food.x);
-        waddnwstr(game->subwin_game, &game->food.image, 1); 
+        waddwstr(game->subwin_game, game->food.image);
     }
 
     for (int i = 0; i < game->snake.length; ++i) 
@@ -382,12 +383,12 @@ void game_render(struct AppContext *app)
             if (i == 0) 
             {
                 wattron(game->subwin_game, A_BOLD);
-                waddnwstr(game->subwin_game, &game->snake.body[i].image, 1);
+                waddwstr(game->subwin_game, game->snake.body[i].image);
                 wattroff(game->subwin_game, A_BOLD);
             } 
             else 
             {
-                waddnwstr(game->subwin_game, &game->snake.body[i].image, 1);
+                waddwstr(game->subwin_game, game->snake.body[i].image);
             }
         }
     }

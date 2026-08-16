@@ -54,7 +54,7 @@ int main(void)
             app.screens.current_screen->render(&app);
         }
         
-        // Отрисовка оверлея поверх
+        // Отрисовка оверлея поверх экрана
         draw_overlay_menu(&app);
 
         // Выбор активного окна для считывания ввода

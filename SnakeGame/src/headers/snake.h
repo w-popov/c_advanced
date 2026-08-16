@@ -60,7 +60,7 @@ struct Pixel
 {
     int x;          
     int y;          
-    wchar_t image;  
+    wchar_t image[4];  
 };
 
 /* Направления движения змейки */
