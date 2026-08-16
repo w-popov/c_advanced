@@ -15,6 +15,8 @@ const wchar_t* overlay_choices[OVERLAY_CHOICES_COUNT] = {
 };
 
 /////////////////////////////////////////////////////////////////////
+// ИГРА
+////////////////////////////////////////////////////////////////////
 
 // Генерация еды
 void generate_food(struct ScreenGamePlay *game) 
@@ -53,7 +55,7 @@ void init_game_session(struct ScreenGamePlay *game, int max_game_w, int max_game
 {
     srand((unsigned int)time(NULL));
     game->score = 0;
-    game->delay_ms = 185;    // СКОРОСТЬ ЗМЕЙКИ
+    game->delay_ms = 145;    // СКОРОСТЬ ЗМЕЙКИ
 
     int max_y, max_x;
     getmaxyx(stdscr, max_y, max_x);
@@ -158,6 +160,8 @@ bool check_collisions(struct ScreenGamePlay *game)
     return false;
 }
 
+/////////////////////////////////////////////////////////////////////
+// ЭКРАНЫ
 /////////////////////////////////////////////////////////////////////
 
 // Отрисовка всплывающего ESC-меню
