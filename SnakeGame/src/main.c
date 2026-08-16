@@ -12,6 +12,7 @@
 
 #include "snake.h"
 #include <locale.h>
+#include <time.h> 
 
 int main(void) 
 {
@@ -22,6 +23,7 @@ int main(void)
     cbreak();
     curs_set(0);
     keypad(stdscr, TRUE);
+    nodelay(stdscr, TRUE);
 
     #ifndef _WIN32
     set_escdelay(50); 
@@ -29,6 +31,7 @@ int main(void)
 
     struct AppContext app;
     app_init(&app);
+    clock_t last_snake_move_time = clock();
 
     while (app.is_running) 
     {
@@ -50,10 +53,35 @@ int main(void)
         {
             app.screens.current_screen->render(&app);
         }
+        
+        // Отрисовка оверлея поверх
         draw_overlay_menu(&app);
-        int ch = (app.overlay.is_visible && app.overlay.win) 
-                 ? wgetch(app.overlay.win) 
-                 : wgetch(stdscr);
+
+        // Выбор активного окна для считывания ввода
+        WINDOW *input_win = stdscr;
+        if (app.overlay.is_visible && app.overlay.win) 
+        {
+            input_win = app.overlay.win;
+        } 
+        else if (app.screens.current_screen == (struct I_GameScreen*)&app.screens.gameplay_screen) 
+        {
+            if (app.screens.gameplay_screen.subwin_game) 
+            {
+                input_win = app.screens.gameplay_screen.subwin_game;
+            }
+        } 
+        else if (app.screens.current_screen == (struct I_GameScreen*)&app.screens.menu_screen) 
+        {
+            if (app.screens.menu_screen.win) 
+            {
+                input_win = app.screens.menu_screen.win;
+            }
+        }
+
+        nodelay(input_win, TRUE);
+        keypad(input_win, TRUE);
+
+        int ch = wgetch(input_win);
 
         // Глобальный перехват кнопки ESC (код 27)
         if (ch == 27) 
@@ -62,6 +90,8 @@ int main(void)
             {
                 app.overlay.is_visible = !app.overlay.is_visible;
                 app.overlay.highlight = 0;
+                clear(); 
+                last_snake_move_time = clock(); 
             }
             continue;
         }
@@ -82,18 +112,17 @@ int main(void)
                 case 10: // Enter
                     if (app.overlay.highlight == 0) 
                     {
-                        // Продолжить
                         app.overlay.is_visible = false; 
+                        clear();
+                        last_snake_move_time = clock(); 
                     } 
                     else if (app.overlay.highlight == 1) 
                     {
                         app.overlay.is_visible = false;
-                        // В меню
                         app_switch_screen(&app, (struct I_GameScreen*)&app.screens.menu_screen); 
                     } 
                     else if (app.overlay.highlight == 2) 
                     {
-                        // Выход
                         app.is_running = 0; 
                     }
                     break;
@@ -101,21 +130,43 @@ int main(void)
         } 
         else 
         {
-            // изменение размеров терминала
             if (ch == KEY_RESIZE) 
             {
                 if (app.screens.current_screen && app.screens.current_screen->clean) 
                 {
                     app.screens.current_screen->clean(&app);
                 }
+                clear();
                 continue; 
             }
-            // проброс ввода в активный экран
-            if (app.screens.current_screen && app.screens.current_screen->handle_input) 
+            if (ch != ERR && app.screens.current_screen && app.screens.current_screen->handle_input) 
             {
                 app.screens.current_screen->handle_input(&app, ch);
             }
         }
+
+        if (app.screens.current_screen == (struct I_GameScreen*)&app.screens.gameplay_screen && !app.overlay.is_visible) 
+        {
+            clock_t current_time = clock();
+            double elapsed_seconds = (double)(current_time - last_snake_move_time) / CLOCKS_PER_SEC;
+            double required_delay_seconds = (double)app.screens.gameplay_screen.delay_ms / 10000.0;
+
+            if (elapsed_seconds >= required_delay_seconds) 
+            { 
+                update_snake_step(&app.screens.gameplay_screen);
+                
+                if (check_collisions(&app.screens.gameplay_screen)) 
+                {
+                    app_switch_screen(&app, (struct I_GameScreen*)&app.screens.menu_screen);
+                    continue;
+                }
+                
+                last_snake_move_time = current_time; 
+            }
+        }
+
+        struct timespec ts = { .tv_sec = 0, .tv_nsec = 10000000 }; // 10 миллисекунд сна
+        thrd_sleep(&ts, NULL);
     }
 
     app_destroy(&app);

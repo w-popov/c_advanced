@@ -52,11 +52,43 @@ struct ScreenMenu
     int highlight;
 };
 
+/* Максимально возможная длина змейки */
+#define MAX_SNAKE_LENGTH 100
+
+/* Структура для представления объекта на экране */
+struct Pixel
+{
+    int x;          
+    int y;          
+    wchar_t image;  
+};
+
+/* Направления движения змейки */
+typedef enum 
+{
+    DIR_UP,
+    DIR_DOWN,
+    DIR_LEFT,
+    DIR_RIGHT
+} Direction;
+
+/* Структура змейки */
+struct Snake
+{
+    struct Pixel body[MAX_SNAKE_LENGTH]; 
+    int length;                          
+    Direction dir;                       
+};
+
 struct ScreenGamePlay
 {
     struct I_GameScreen game_screen;
     WINDOW *subwin_status;
     WINDOW *subwin_game; 
+    struct Snake snake;
+    struct Pixel food;
+    int score;
+    int delay_ms;
 };
 
 /* Всплывающее ESC-оверлей меню */
@@ -73,14 +105,6 @@ struct GameScreens
     struct I_GameScreen *current_screen;
     struct ScreenMenu menu_screen;
     struct ScreenGamePlay gameplay_screen;
-};
-
-/* Структура для представления объекта на экране */
-struct Pixel
-{
-    int x;          
-    int y;          
-    wchar_t image;  
 };
 
 /* Главный контекст приложения */
@@ -102,5 +126,22 @@ void app_destroy(struct AppContext *app);
 
 // Отрисовка оверлейного меню
 void draw_overlay_menu(struct AppContext *app);
+
+// Инициализация игры
+void init_game_session(struct ScreenGamePlay *game, int max_game_w, int max_game_h);
+
+// Обновление состояния змейки на каждом шаге
+void update_snake_step(struct ScreenGamePlay *game);
+
+// Проверка столкновений змейки с границами и самой собой
+bool check_collisions(struct ScreenGamePlay *game);
+
+// Проверка, съела ли змейка еду
+// bool check_food_collision(struct ScreenGamePlay *game);
+
+// Генерация новой еды в случайной позиции
+void generate_food(struct ScreenGamePlay *game);
+
+
 
 #endif
