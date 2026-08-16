@@ -25,8 +25,11 @@ int main(void)
     keypad(stdscr, TRUE);
     nodelay(stdscr, TRUE);
 
+    double time_speed = 1000.0;
+
     #ifndef _WIN32
     set_escdelay(50); 
+    time_speed = 10000.0;
     #endif
 
     struct AppContext app;
@@ -147,9 +150,10 @@ int main(void)
 
         if (app.screens.current_screen == (struct I_GameScreen*)&app.screens.gameplay_screen && !app.overlay.is_visible) 
         {
+            
             clock_t current_time = clock();
             double elapsed_seconds = (double)(current_time - last_snake_move_time) / CLOCKS_PER_SEC;
-            double required_delay_seconds = (double)app.screens.gameplay_screen.delay_ms / 10000.0;
+            double required_delay_seconds = (double)app.screens.gameplay_screen.delay_ms / time_speed;
 
             if (elapsed_seconds >= required_delay_seconds) 
             { 

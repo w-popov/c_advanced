@@ -53,7 +53,7 @@ void init_game_session(struct ScreenGamePlay *game, int max_game_w, int max_game
 {
     srand((unsigned int)time(NULL));
     game->score = 0;
-    game->delay_ms = 85;    // СКОРОСТЬ ЗМЕЙКИ
+    game->delay_ms = 185;    // СКОРОСТЬ ЗМЕЙКИ
 
     int max_y, max_x;
     getmaxyx(stdscr, max_y, max_x);
