@@ -147,7 +147,7 @@ int main(void)
                 app.screens.current_screen->handle_input(&app, ch);
             }
         }
-
+        // игровой процесс
         if (app.screens.current_screen == (struct I_GameScreen*)&app.screens.gameplay_screen && !app.overlay.is_visible) 
         {
             
@@ -157,9 +157,9 @@ int main(void)
 
             if (elapsed_seconds >= required_delay_seconds) 
             { 
-                update_snake_step(&app.screens.gameplay_screen);
+                update_snake_step(&app.screens.gameplay_screen);    // шаг змейки
                 
-                if (check_collisions(&app.screens.gameplay_screen)) 
+                if (check_collisions(&app.screens.gameplay_screen)) // столкновения
                 {
                     app_switch_screen(&app, (struct I_GameScreen*)&app.screens.menu_screen);
                     continue;
