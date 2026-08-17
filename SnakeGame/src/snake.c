@@ -228,7 +228,7 @@ void menu_handle_input(struct AppContext *app, int ch)
             {
                 int max_y, max_x;
                 getmaxyx(stdscr, max_y, max_x);
-                init_game_session(&app->screens.gameplay_screen, max_x - 4, max_y - 3 - 2);
+                init_game_session(&app->screens.gameplay_screen, max_x - 4, max_y - 1);
                 app_switch_screen(app, (struct I_GameScreen*)&app->screens.gameplay_screen);
             } 
             else if (menu->highlight == 1) 

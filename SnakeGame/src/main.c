@@ -54,7 +54,7 @@ int main(void)
 
         if (app.screens.current_screen && app.screens.current_screen->render) 
         {
-            app.screens.current_screen->render(&app);
+            app.screens.current_screen->render(&app);   // ОТРИСОВКА ЭКРАНОВ
         }
         
         // Отрисовка оверлея поверх экрана
@@ -169,8 +169,8 @@ int main(void)
             }
         }
 
-        struct timespec ts = { .tv_sec = 0, .tv_nsec = 10000000 }; // пауза
-        thrd_sleep(&ts, NULL);
+        struct timespec ts = { .tv_sec = 0, .tv_nsec = 10000000 }; 
+        thrd_sleep(&ts, NULL);  // поток в сон
     }
 
     app_destroy(&app);
