@@ -48,7 +48,7 @@ int main(void)
             {
                 app.screens.current_screen->clean(&app);
             }
-            clear(); 
+            erase(); 
             continue; 
         }
         #endif
@@ -59,10 +59,12 @@ int main(void)
         }
         
         // Отрисовка оверлея поверх экрана
-        draw_overlay_menu(&app);     
+        draw_overlay_menu(&app); 
+        
+        doupdate();
 
         int ch = wgetch(stdscr);
-
+        
         // Глобальный перехват кнопки ESC (код 27)
         if (ch == 27) 
         {
@@ -70,7 +72,7 @@ int main(void)
             {
                 app.overlay.is_visible = !app.overlay.is_visible;
                 app.overlay.highlight = 0;
-                clear(); 
+                erase(); 
                 last_snake_move_time = clock(); 
             }
             continue;
@@ -93,7 +95,7 @@ int main(void)
                     if (app.overlay.highlight == 0) 
                     {
                         app.overlay.is_visible = false; 
-                        clear();
+                        erase();
                         last_snake_move_time = clock(); 
                     } 
                     else if (app.overlay.highlight == 1) 
@@ -116,7 +118,7 @@ int main(void)
                 {
                     app.screens.current_screen->clean(&app);
                 }
-                clear();
+                erase();
                 continue; 
             }
             if (ch != ERR && app.screens.current_screen && app.screens.current_screen->handle_input) 
@@ -146,7 +148,7 @@ int main(void)
             }
         }
 
-        struct timespec ts = { .tv_sec = 0, .tv_nsec = 10000000 }; 
+        struct timespec ts = { .tv_sec = 0, .tv_nsec = 1000000 }; 
         thrd_sleep(&ts, NULL);  // поток в сон
     }
 

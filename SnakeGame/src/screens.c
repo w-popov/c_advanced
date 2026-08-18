@@ -26,6 +26,7 @@ void draw_overlay_menu(struct AppContext *app)
         {
             delwin(app->overlay.win);
             app->overlay.win = NULL;
+            touchwin(stdscr);
         }
         return;
     }
@@ -41,7 +42,7 @@ void draw_overlay_menu(struct AppContext *app)
         keypad(app->overlay.win, TRUE);
     }
 
-    wclear(app->overlay.win);
+    werase(app->overlay.win);
     box(app->overlay.win, 0, 0);
     
     wmove(app->overlay.win, 0, 2);
@@ -61,7 +62,7 @@ void draw_overlay_menu(struct AppContext *app)
             waddwstr(app->overlay.win, overlay_choices[i]);
         }
     }
-    wrefresh(app->overlay.win);
+    wnoutrefresh(app->overlay.win);
 }
 
 // ОБРАБОТКА КЛАВИШ ЭКРАНА ГЛАВНОГО МЕНЮ
@@ -110,7 +111,7 @@ void menu_render(struct AppContext *app)
         keypad(menu->win, TRUE); 
     }
 
-    wclear(menu->win);
+    werase(menu->win);
     box(menu->win, 0, 0);
     wmove(menu->win, 0, (MENU_WIDTH - 8) / 2);
     waddwstr(menu->win, L" ЗМЕЙКА ");
@@ -133,7 +134,6 @@ void menu_render(struct AppContext *app)
 
     wnoutrefresh(stdscr);
     wnoutrefresh(menu->win);
-    doupdate();
 }
 
 // Очистка ресурсов экрана меню
@@ -215,7 +215,7 @@ void game_render(struct AppContext *app)
     werase(stdscr); 
 
     // Верхнее окно: статус бар
-    wclear(game->subwin_status);
+    werase(game->subwin_status);
     box(game->subwin_status, 0, 0);
     wmove(game->subwin_status, 1, 2);
     wchar_t status_buf[128];
@@ -223,7 +223,7 @@ void game_render(struct AppContext *app)
     waddwstr(game->subwin_status, status_buf);
 
     // Нижнее окно: поле игры
-    wclear(game->subwin_game);
+    werase(game->subwin_game);
     box(game->subwin_game, 0, 0);
 
     if (game->food.x > 0 && game->food.x < win_w - 1 && game->food.y > 0 && game->food.y < game_h - 1) 
@@ -256,7 +256,6 @@ void game_render(struct AppContext *app)
     wnoutrefresh(stdscr);
     wnoutrefresh(game->subwin_status);
     wnoutrefresh(game->subwin_game);
-    doupdate(); 
 }
 
 // Очистка ресурсов экрана игры
