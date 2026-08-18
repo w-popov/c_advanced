@@ -1,6 +1,7 @@
 #ifndef _SNAKE_GAME_H_
 #define _SNAKE_GAME_H_
 
+#include <stdint.h>
 #include <stdbool.h>
 #include <wchar.h>
 
@@ -45,6 +46,9 @@ bool check_collisions(struct ScreenGamePlay *game);
 
 // Генерация новой еды в случайной позиции
 void generate_food(struct ScreenGamePlay *game);
+
+// Д.З добавить проверку корректного направления движения змейки
+int checkDirection(struct Snake*, int32_t);
 
 
 

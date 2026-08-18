@@ -1,4 +1,5 @@
 #include "screens.h"
+#include <stdint.h>
 
 /////////////////////////////////////////////////////////////////////
 // ЭКРАНЫ
@@ -148,13 +149,17 @@ void menu_clean(struct AppContext *app)
 }
 
 // ИГРОВОЙ ЭКРАН обработка клавиш
-void game_handle_input(struct AppContext *app, int ch) {
+void game_handle_input(struct AppContext *app, int ch) 
+{
     struct ScreenGamePlay *game = &app->screens.gameplay_screen;
-    switch (ch) {
+    int check_dir = checkDirection(&game->snake, (int32_t)ch);
+
+    switch (ch) 
+    {
         case 'w':
         case 'W':
         case KEY_UP:    
-            if (game->snake.dir != DIR_DOWN) 
+            if (check_dir) 
             {
                 game->snake.dir = DIR_UP;
             }    
@@ -162,7 +167,7 @@ void game_handle_input(struct AppContext *app, int ch) {
         case 's':
         case 'S':
         case KEY_DOWN:  
-            if (game->snake.dir != DIR_UP) 
+            if (check_dir) 
             {
                 game->snake.dir = DIR_DOWN;
             }  
@@ -170,7 +175,7 @@ void game_handle_input(struct AppContext *app, int ch) {
         case 'a':
         case 'A':
         case KEY_LEFT:  
-            if (game->snake.dir != DIR_RIGHT) 
+            if (check_dir) 
             {
                 game->snake.dir = DIR_LEFT;
             }  
@@ -178,7 +183,7 @@ void game_handle_input(struct AppContext *app, int ch) {
         case 'd':
         case 'D':
         case KEY_RIGHT: 
-            if (game->snake.dir != DIR_LEFT) 
+            if (check_dir) 
             {
                 game->snake.dir = DIR_RIGHT;
             } 
@@ -283,7 +288,8 @@ void game_clean(struct AppContext *app)
 }
 
 // ИНИЦИАЛИЗАЦИЯ
-void app_init(struct AppContext *app) {
+void app_init(struct AppContext *app) 
+{
     // Настройка интерфейсных методов для экрана Меню
     app->screens.menu_screen.game_screen.render       = menu_render;
     app->screens.menu_screen.game_screen.clean        = menu_clean;

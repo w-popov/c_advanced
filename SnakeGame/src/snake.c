@@ -7,6 +7,38 @@
 // ИГРА
 ////////////////////////////////////////////////////////////////////
 
+
+// Д.З. Проверка корректности выбранного направления движения
+int checkDirection(struct Snake *snake, int32_t key)
+{
+    switch (key)
+    {
+    case 'w':
+    case 'W':
+    case KEY_UP:    
+        return snake->dir != DIR_DOWN;
+        
+    case 's':
+    case 'S':
+    case KEY_DOWN:  
+        return snake->dir != DIR_UP;
+
+    case 'a':
+    case 'A':
+    case KEY_LEFT:  
+        return snake->dir != DIR_RIGHT;
+
+    case 'd':
+    case 'D':
+    case KEY_RIGHT: 
+        return snake->dir != DIR_LEFT;
+    
+    default:
+        break;
+    }
+    return 0;
+}
+
 // Генерация еды
 void generate_food(struct ScreenGamePlay *game) 
 {
