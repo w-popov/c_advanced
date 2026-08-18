@@ -10,6 +10,7 @@
     #include <threads.h>
 #endif
 
+#include "screens.h"
 #include "snake.h"
 #include <locale.h>
 #include <time.h> 
@@ -58,33 +59,9 @@ int main(void)
         }
         
         // Отрисовка оверлея поверх экрана
-        draw_overlay_menu(&app);
+        draw_overlay_menu(&app);     
 
-        // Выбор активного окна для считывания ввода
-        WINDOW *input_win = stdscr;
-        if (app.overlay.is_visible && app.overlay.win) 
-        {
-            input_win = app.overlay.win;
-        } 
-        else if (app.screens.current_screen == (struct I_GameScreen*)&app.screens.gameplay_screen) 
-        {
-            if (app.screens.gameplay_screen.subwin_game) 
-            {
-                input_win = app.screens.gameplay_screen.subwin_game;
-            }
-        } 
-        else if (app.screens.current_screen == (struct I_GameScreen*)&app.screens.menu_screen) 
-        {
-            if (app.screens.menu_screen.win) 
-            {
-                input_win = app.screens.menu_screen.win;
-            }
-        }
-
-        nodelay(input_win, TRUE);
-        keypad(input_win, TRUE);
-
-        int ch = wgetch(input_win);
+        int ch = wgetch(stdscr);
 
         // Глобальный перехват кнопки ESC (код 27)
         if (ch == 27) 
