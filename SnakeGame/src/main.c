@@ -129,7 +129,6 @@ int main(void)
         // игровой процесс
         if (app.screens.current_screen == (struct I_GameScreen*)&app.screens.gameplay_screen && !app.overlay.is_visible) 
         {
-            
             clock_t current_time = clock();
             double elapsed_seconds = (double)(current_time - last_snake_move_time) / CLOCKS_PER_SEC;
             double required_delay_seconds = (double)app.screens.gameplay_screen.delay_ms / time_speed;
@@ -143,7 +142,6 @@ int main(void)
                     app_switch_screen(&app, (struct I_GameScreen*)&app.screens.menu_screen);
                     continue;
                 }
-                
                 last_snake_move_time = current_time; 
             }
         }

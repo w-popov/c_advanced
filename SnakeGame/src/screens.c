@@ -151,24 +151,32 @@ void menu_clean(struct AppContext *app)
 void game_handle_input(struct AppContext *app, int ch) {
     struct ScreenGamePlay *game = &app->screens.gameplay_screen;
     switch (ch) {
+        case 'w':
+        case 'W':
         case KEY_UP:    
             if (game->snake.dir != DIR_DOWN) 
             {
                 game->snake.dir = DIR_UP;
             }    
             break;
+        case 's':
+        case 'S':
         case KEY_DOWN:  
             if (game->snake.dir != DIR_UP) 
             {
                 game->snake.dir = DIR_DOWN;
             }  
             break;
+        case 'a':
+        case 'A':
         case KEY_LEFT:  
             if (game->snake.dir != DIR_RIGHT) 
             {
                 game->snake.dir = DIR_LEFT;
             }  
             break;
+        case 'd':
+        case 'D':
         case KEY_RIGHT: 
             if (game->snake.dir != DIR_LEFT) 
             {
