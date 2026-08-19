@@ -13,11 +13,10 @@
 #else
     #define _XOPEN_SOURCE_EXTENDED 1
     #include <ncurses.h>
-    // Проверяем поддержку C11 threads
     #if defined(__STDC_NO_THREADS__)
-        #include "tinycthread.h"  // Fallback для систем без C11 threads
+        #include "tinycthread.h"  
     #else
-        #include <threads.h>      // Стандартные потоки C11 для Linux
+        #include <threads.h>
     #endif
 #endif
 
@@ -89,5 +88,6 @@ int checkDirection(struct Snake*, int32_t);
 
 // Остановка фонового потока и очистка мьютекса
 void stop_game_session(struct ScreenGamePlay *game);
+
 
 #endif

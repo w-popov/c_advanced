@@ -3,9 +3,6 @@
 #include <locale.h>
 #include <time.h> 
 
-// Прототип внешней функции остановки сессии
-void stop_game_session(struct ScreenGamePlay *game);
-
 int main(void) 
 {
     setlocale(LC_ALL, "");
@@ -158,3 +155,4 @@ int main(void)
     endwin();
     return 0;
 }
+
