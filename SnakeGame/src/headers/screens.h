@@ -13,7 +13,7 @@
 #else
     #define _XOPEN_SOURCE_EXTENDED 1
     #include <ncurses.h>
-    #include <threads.h>
+    #include <threads.h> // Стандартные потоки C11 для Linux
 #endif
 
 #include "snake.h"
@@ -21,31 +21,35 @@
 #include <stdbool.h>
 
 // Константы для размеров меню
-#define MENU_WIDTH  30
-#define MENU_HEIGHT 8
-#define OVERLAY_MENU_HEIGHT 7
+#define MENU_WIDTH              30
+#define MENU_HEIGHT             8
+#define OVERLAY_MENU_HEIGHT     7
 
-#define MENU_CHOICES_COUNT 2
-#define OVERLAY_CHOICES_COUNT 3
+#define MENU_CHOICES_COUNT      2
+#define OVERLAY_CHOICES_COUNT   3
 
 extern const wchar_t* menu_choices[MENU_CHOICES_COUNT];
 extern const wchar_t* overlay_choices[OVERLAY_CHOICES_COUNT];
 
 struct AppContext;
+struct Food;
 
 /* Сигнатуры паттерна Стратегия */
 typedef void (*I_render)        (struct AppContext *cntx);
 typedef void (*I_clean)         (struct AppContext *cntx);
 typedef void (*I_handle_input)  (struct AppContext *cntx, int ch);
 
+/* Интерфейс экранов */
 struct I_GameScreen
 {
-    I_render render;
-    I_clean  clean;
-    I_handle_input handle_input;
+    I_render render;                // Отрисовка экрана
+    I_clean  clean;                 // Очистка 
+    I_handle_input handle_input;    // Обработка клавиш
 };
 
-/* Экраны */
+/////////////// ЭКРАНЫ /////////////////
+
+/* Экран главного меню */
 struct ScreenMenu
 {
     struct I_GameScreen game_screen;
@@ -53,6 +57,7 @@ struct ScreenMenu
     int highlight;
 };
 
+/* Экран игры */
 struct ScreenGamePlay
 {
     struct I_GameScreen game_screen;
@@ -60,8 +65,14 @@ struct ScreenGamePlay
     WINDOW *subwin_game; 
     struct Snake snake;
     struct Pixel food;
+    struct Food foods[MAX_NUM_FOOD];
     int score;
     int delay_ms;
+    int is_pause;
+    volatile int is_running;
+    mtx_t foods_mutex;          // Мьютекс
+    thrd_t food_thread;         // Дескриптор 2 потока
+    
 };
 
 /* Всплывающее ESC-оверлей меню */
@@ -85,7 +96,7 @@ struct AppContext
 {
     struct GameScreens screens;     
     struct OverlayMenu overlay;
-    int is_running;                 
+    int is_running;
 };
 
 // Инициализация приложения

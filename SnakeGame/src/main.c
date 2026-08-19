@@ -1,19 +1,10 @@
-#ifdef _WIN32
-    #include <curses.h>
-    #if defined(__STDC_NO_THREADS__) || defined(__MINGW32__)
-        #include "tinycthread.h" 
-    #else
-        #include <threads.h>
-    #endif
-#else
-    #include <ncurses.h>
-    #include <threads.h>
-#endif
-
 #include "screens.h"
 #include "snake.h"
 #include <locale.h>
 #include <time.h> 
+
+// Прототип внешней функции остановки сессии
+void stop_game_session(struct ScreenGamePlay *game);
 
 int main(void) 
 {
@@ -75,10 +66,9 @@ int main(void)
                 erase(); 
                 last_snake_move_time = clock(); 
             }
-            continue;
+            
         }
-
-        if (app.overlay.is_visible) 
+        else if (app.overlay.is_visible) 
         {
             // Обработка ввода внутри всплывающего меню паузы
             switch (ch) 
@@ -101,10 +91,12 @@ int main(void)
                     else if (app.overlay.highlight == 1) 
                     {
                         app.overlay.is_visible = false;
+                        stop_game_session(&app.screens.gameplay_screen);
                         app_switch_screen(&app, (struct I_GameScreen*)&app.screens.menu_screen); 
                     } 
                     else if (app.overlay.highlight == 2) 
                     {
+                        stop_game_session(&app.screens.gameplay_screen);
                         app.is_running = 0; 
                     }
                     break;
@@ -121,28 +113,39 @@ int main(void)
                 erase();
                 continue; 
             }
-            if (ch != ERR && app.screens.current_screen && app.screens.current_screen->handle_input) 
+            if (ch != ERR && ch != 27 && app.screens.current_screen && app.screens.current_screen->handle_input) 
             {
                 app.screens.current_screen->handle_input(&app, ch);
             }
         }
-        // игровой процесс
-        if (app.screens.current_screen == (struct I_GameScreen*)&app.screens.gameplay_screen && !app.overlay.is_visible) 
-        {
-            clock_t current_time = clock();
-            double elapsed_seconds = (double)(current_time - last_snake_move_time) / CLOCKS_PER_SEC;
-            double required_delay_seconds = (double)app.screens.gameplay_screen.delay_ms / time_speed;
 
-            if (elapsed_seconds >= required_delay_seconds) 
-            { 
-                update_snake_step(&app.screens.gameplay_screen);    // шаг змейки
-                
-                if (check_collisions(&app.screens.gameplay_screen)) // столкновения
-                {
-                    app_switch_screen(&app, (struct I_GameScreen*)&app.screens.menu_screen);
-                    continue;
+        // Игровой процесс
+        if (app.screens.current_screen == (struct I_GameScreen*)&app.screens.gameplay_screen) 
+        {
+            if (app.overlay.is_visible) 
+            {
+                app.screens.gameplay_screen.is_pause = 1;
+            }
+            else 
+            {
+                app.screens.gameplay_screen.is_pause = 0;
+
+                clock_t current_time = clock();
+                double elapsed_seconds = (double)(current_time - last_snake_move_time) / CLOCKS_PER_SEC;
+                double required_delay_seconds = (double)app.screens.gameplay_screen.delay_ms / time_speed;
+
+                if (elapsed_seconds >= required_delay_seconds) 
+                { 
+                    update_snake_step(&app.screens.gameplay_screen);    // шаг змейки
+                    
+                    if (check_collisions(&app.screens.gameplay_screen)) // столкновения
+                    {
+                        stop_game_session(&app.screens.gameplay_screen); // Остановка потока при проигрыше
+                        app_switch_screen(&app, (struct I_GameScreen*)&app.screens.menu_screen);
+                        continue;
+                    }
+                    last_snake_move_time = current_time; 
                 }
-                last_snake_move_time = current_time; 
             }
         }
 
@@ -150,9 +153,8 @@ int main(void)
         thrd_sleep(&ts, NULL);  // поток в сон
     }
 
+    stop_game_session(&app.screens.gameplay_screen);
     app_destroy(&app);
     endwin();
     return 0;
 }
-
-// git pull origin main

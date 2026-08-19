@@ -83,11 +83,13 @@ void menu_handle_input(struct AppContext *app, int ch)
             {
                 int max_y, max_x;
                 getmaxyx(stdscr, max_y, max_x);
+                stop_game_session(&app->screens.gameplay_screen);
                 init_game_session(&app->screens.gameplay_screen, max_x - 4, max_y - 1);
                 app_switch_screen(app, (struct I_GameScreen*)&app->screens.gameplay_screen);
             } 
             else if (menu->highlight == 1) 
             {
+                stop_game_session(&app->screens.gameplay_screen);
                 app->is_running = 0;
             }
             break;
@@ -217,14 +219,6 @@ void game_render(struct AppContext *app)
         nodelay(game->subwin_game, TRUE);
     }
 
-    if (game->food.x <= 0 || 
-        game->food.x >= win_w - 1 || 
-        game->food.y <= 0 || 
-        game->food.y >= game_h - 1) 
-    {
-        generate_food(game);
-    }
-
     werase(stdscr); 
 
     // Верхнее окно: статус бар
@@ -239,11 +233,7 @@ void game_render(struct AppContext *app)
     werase(game->subwin_game);
     box(game->subwin_game, 0, 0);
 
-    if (game->food.x > 0 && game->food.x < win_w - 1 && game->food.y > 0 && game->food.y < game_h - 1) 
-    {
-        wmove(game->subwin_game, game->food.y, game->food.x);
-        waddnwstr(game->subwin_game, &game->food.image, 1); 
-    }
+    render_foods(game);
 
     for (int i = 0; i < game->snake.length; ++i) 
     {
@@ -308,6 +298,7 @@ void app_init(struct AppContext *app)
     app->overlay.is_visible = false;
     app->overlay.highlight = 0;
 
+    app->screens.gameplay_screen.is_pause = 0;
     app->is_running = 1;
 
     // Старт с экрана меню

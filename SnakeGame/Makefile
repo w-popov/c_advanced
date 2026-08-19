@@ -1,7 +1,7 @@
 TARGET = snake
 SRC_DIR = src
 CC = gcc
-CFLAGS = -std=c11 -Wall -Isrc/headers
+CFLAGS = -std=c11 -Wall -pthread -Isrc/headers
 
 SRCS = $(wildcard $(SRC_DIR)/*.c)
 OBJS = $(SRCS:.c=.o)
@@ -13,7 +13,7 @@ ifeq ($(OS),Windows_NT)
     DEPENDENCY = lib/libpdcurses.a
 else
     EXEC = $(TARGET)
-    LDFLAGS = -lncursesw -lpthread
+    LDFLAGS = -pthread -lncursesw 
     DEPENDENCY = linux_dep
 endif
 
