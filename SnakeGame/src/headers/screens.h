@@ -1,24 +1,10 @@
 #ifndef _SCREENS_SNAKE_GAME_H_
 #define _SCREENS_SNAKE_GAME_H_
-
-#ifdef _WIN32
-    #define PDC_WIDE
-    #define PDC_FORCE_UTF8
-    #include <curses.h>
-    #if defined(__STDC_NO_THREADS__) || defined(__MINGW32__)
-        #include "tinycthread.h" 
-    #else
-        #include <threads.h>
-    #endif
-#else
-    #define _XOPEN_SOURCE_EXTENDED 1
-    #include <ncurses.h>
-    #include <threads.h> // Стандартные потоки C11 для Linux
-#endif
-
+    
 #include "snake.h"
 #include <wchar.h>
 #include <stdbool.h>
+#include "tinycthread.h"
 
 // Константы для размеров меню
 #define MENU_WIDTH              30

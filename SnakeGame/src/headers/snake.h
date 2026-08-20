@@ -5,25 +5,16 @@
     #define PDC_WIDE
     #define PDC_FORCE_UTF8
     #include <curses.h>
-    #if defined(__STDC_NO_THREADS__) || defined(__MINGW32__)
-        #include "tinycthread.h" 
-    #else
-        #include <threads.h>
-    #endif
 #else
     #define _XOPEN_SOURCE_EXTENDED 1
     #include <ncurses.h>
-    #if defined(__STDC_NO_THREADS__)
-        #include "tinycthread.h"  
-    #else
-        #include <threads.h>
     #endif
-#endif
-
+    
 #include <stdint.h>
 #include <stdbool.h>
 #include <wchar.h>
 #include <time.h>
+#include "tinycthread.h"
 
 struct ScreenGamePlay;
 

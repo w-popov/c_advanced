@@ -113,7 +113,9 @@ void generate_foods(struct ScreenGamePlay *game)
     }
 }
 
+////////////////////////////////////////////////////////////////////////
 // ВТОРОЙ ПОТОК: Фоновое отслеживание времени обновления еды по таймерам
+////////////////////////////////////////////////////////////////////////
 int food_timer_thread_func(void *arg) 
 {
     struct ScreenGamePlay *game = (struct ScreenGamePlay *)arg;
