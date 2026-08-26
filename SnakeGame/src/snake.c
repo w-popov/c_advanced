@@ -404,7 +404,6 @@ void stop_game_session(struct ScreenGamePlay *game)
     thrd_join(game->food_thread, &food_thread_result);
     thrd_join(game->two_snake_thrd, &snake_thread_result);
     mtx_destroy(&game->foods_mutex);
-    mtx_destroy(game->ptr_ch_key_mutex);
 }
 
 
