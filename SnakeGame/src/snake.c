@@ -116,7 +116,7 @@ void generate_foods(struct ScreenGamePlay *game)
 ////////////////////////////////////////////////////////////////////////
 // ВТОРОЙ ПОТОК: Фоновое отслеживание времени обновления еды по таймерам
 ////////////////////////////////////////////////////////////////////////
-int food_timer_thread_func(void *arg) 
+int food_timer_thread_func (void *arg) 
 {
     struct ScreenGamePlay *game = (struct ScreenGamePlay *)arg;
 
@@ -154,8 +154,36 @@ int food_timer_thread_func(void *arg)
     return thrd_success;
 }
 
-#if 0
+//////////////////////////////////////////////////////////////////
+// ТРЕТИЙ ПОТОК 2 змейка
+//////////////////////////////////////////////////////////////////
+int two_snake_thread_func (void *arg)
+{
+    struct ScreenGamePlay *game = (struct ScreenGamePlay *)arg;
+    struct timespec ts = { .tv_sec = 0, .tv_nsec = 5000000 }; // 5 мс
 
+    while (game->is_running) 
+    {
+
+        if (!game->is_running) break;
+
+        int key = 0;
+
+        mtx_lock(game->ptr_ch_key_mutex);
+        if (game->ch_key)
+        {
+            key = *(game->ch_key); 
+            game->_key = key;
+        }
+        mtx_unlock(game->ptr_ch_key_mutex);
+
+        thrd_sleep(&ts, NULL);
+    }
+    
+    return thrd_success;
+}
+
+#if 0
 // 1ШТ. Генерация еды. ScreenGamePlay - владелец
 void generate_food(struct ScreenGamePlay *game) 
 {
@@ -194,12 +222,13 @@ void init_game_session(struct ScreenGamePlay *game, int max_game_w, int max_game
 {
     srand((unsigned int)time(NULL));
     game->score = 0;
-    game->delay_ms = 145;    // СКОРОСТЬ ЗМЕЙКИ
+    game->snake.delay_ms = 145;    // СКОРОСТЬ ЗМЕЙКИ
     game->is_running = 1;
     game->is_pause = 0;
 
+    /* Мьютекс потока еды */
     mtx_init(&game->foods_mutex, mtx_plain); 
-
+    
     int max_y, max_x;
     getmaxyx(stdscr, max_y, max_x);
     int status_h = 3;
@@ -234,7 +263,7 @@ void init_game_session(struct ScreenGamePlay *game, int max_game_w, int max_game
     generate_foods(game);
     mtx_unlock(&game->foods_mutex);
 
-    // ЗАПУСК ПОТОКА
+    // ЗАПУСК ПОТОКА ЕДЫ
     int result = thrd_create(&game->food_thread, food_timer_thread_func, (void *)game);
     if (result != thrd_success) 
     {
@@ -247,6 +276,15 @@ void init_game_session(struct ScreenGamePlay *game, int max_game_w, int max_game
         mtx_destroy(&game->foods_mutex);
     }
 
+    // ЗАПУСК ПОТОКА 2 ЗМЕЙКИ
+    int res = thrd_create(&game->two_snake_thrd, two_snake_thread_func, (void *)game);
+    if (res != thrd_success) 
+    {
+       
+        mvprintw(0, 0, "КРИТИЧЕСКАЯ ОШИБКА: Поток не может быть создан! Код ошибки: %d", result);
+        refresh();
+        sleep(3);
+    }
 }
 
 // Физический шаг движения змейки
@@ -362,9 +400,11 @@ void stop_game_session(struct ScreenGamePlay *game)
     if (!game->is_running)
         return;
     game->is_running = 0;
-    int thread_result;
-    thrd_join(game->food_thread, &thread_result);
+    int food_thread_result, snake_thread_result;
+    thrd_join(game->food_thread, &food_thread_result);
+    thrd_join(game->two_snake_thrd, &snake_thread_result);
     mtx_destroy(&game->foods_mutex);
+    mtx_destroy(game->ptr_ch_key_mutex);
 }
 
 

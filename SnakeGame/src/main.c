@@ -7,6 +7,7 @@ int main(void)
 {
     setlocale(LC_ALL, "");
     initscr();
+    // start_color();
     clear();
     noecho();
     cbreak();
@@ -23,6 +24,11 @@ int main(void)
 
     struct AppContext app;
     app_init(&app);
+
+    // Мьютекс нажатия клавиш
+    mtx_init(&app.ch_key_mutex, mtx_plain);
+    app.shared_ch_key = 0;
+
     clock_t last_snake_move_time = clock();
 
     while (app.is_running) 
@@ -52,6 +58,19 @@ int main(void)
         doupdate();
 
         int ch = wgetch(stdscr);
+        
+        // КРИТИЧЕСКАЯ СЕКЦИЯ для передачи символа в поток 2 змейки
+        mtx_lock(&app.ch_key_mutex);
+        if (ch != ERR) 
+        {
+            app.shared_ch_key = ch; // Передача символа
+        } 
+        else 
+        {
+            // DEBUG
+            // app.shared_ch_key = 0;  // 0 если клавиша не нажата
+        }
+        mtx_unlock(&app.ch_key_mutex);
         
         // Глобальный перехват кнопки ESC (код 27)
         if (ch == 27) 
@@ -129,7 +148,7 @@ int main(void)
 
                 clock_t current_time = clock();
                 double elapsed_seconds = (double)(current_time - last_snake_move_time) / CLOCKS_PER_SEC;
-                double required_delay_seconds = (double)app.screens.gameplay_screen.delay_ms / time_speed;
+                double required_delay_seconds = (double)app.screens.gameplay_screen.snake.delay_ms / time_speed;
 
                 if (elapsed_seconds >= required_delay_seconds) 
                 { 

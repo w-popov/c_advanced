@@ -226,7 +226,14 @@ void game_render(struct AppContext *app)
     box(game->subwin_status, 0, 0);
     wmove(game->subwin_status, 1, 2);
     wchar_t status_buf[128];
-    swprintf(status_buf, 128, L"Очки: %04d  |  [ESC] - Пауза", game->score);
+
+    // ОТЛАДКА
+    mtx_lock(game->ptr_ch_key_mutex);
+    int key_to_show = game->_key;
+    mtx_unlock(game->ptr_ch_key_mutex);
+    // --
+
+    swprintf(status_buf, 128, L"Очки: %04d  |  [ESC] - Пауза | KEY: %d", game->score, key_to_show);
     waddwstr(game->subwin_status, status_buf);
 
     // Нижнее окно: поле игры
@@ -291,8 +298,8 @@ void app_init(struct AppContext *app)
     app->screens.gameplay_screen.game_screen.render       = game_render;
     app->screens.gameplay_screen.game_screen.clean        = game_clean;
     app->screens.gameplay_screen.game_screen.handle_input = game_handle_input;
-    app->screens.gameplay_screen.subwin_status = NULL;
-    app->screens.gameplay_screen.subwin_game   = NULL;
+    app->screens.gameplay_screen.subwin_status            = NULL;
+    app->screens.gameplay_screen.subwin_game              = NULL;
 
     app->overlay.win = NULL;
     app->overlay.is_visible = false;
@@ -300,6 +307,11 @@ void app_init(struct AppContext *app)
 
     app->screens.gameplay_screen.is_pause = 0;
     app->is_running = 1;
+
+    // Передача указателя на нажатую клавишу для 2 потоков змеек
+    app->screens.gameplay_screen.ch_key = &(app->shared_ch_key);
+    // Передача указателя на мьютекс клавиш управления
+    app->screens.gameplay_screen.ptr_ch_key_mutex = &(app->ch_key_mutex);
 
     // Старт с экрана меню
     app->screens.current_screen = (struct I_GameScreen*)&app->screens.menu_screen;

@@ -47,18 +47,19 @@ struct ScreenMenu
 struct ScreenGamePlay
 {
     struct I_GameScreen game_screen;
-    WINDOW *subwin_status;
-    WINDOW *subwin_game; 
-    struct Snake snake;
-    struct Pixel food;
-    struct Food foods[MAX_NUM_FOOD];
-    int score;
-    int delay_ms;
-    int is_pause;
-    volatile int is_running;
-    mtx_t foods_mutex;          // Мьютекс
-    thrd_t food_thread;         // Дескриптор 2 потока
-    
+    WINDOW *subwin_status;              // Окно статуса
+    WINDOW *subwin_game;                // Окно игрового поля
+    struct Snake snake;                 // Основная змейка
+    struct Food foods[MAX_NUM_FOOD];    // Массив еды
+    int score;                          // Очки
+    int is_pause;                       // Пауза?
+    int* ch_key;                        // Указатель на поле shared_ch_key структуры AppContext
+    int _key; // ОТЛАДКА //
+    volatile int is_running;            // Флаг что игра активна для потока еды
+    thrd_t two_snake_thrd;              // Дескриптор 3 потока второй змейки
+    mtx_t foods_mutex;                  // Мьютекс еды
+    mtx_t* ptr_ch_key_mutex;            // Указатель на мьютекс клавиш управления (в AppContext)
+    thrd_t food_thread;                 // Дескриптор 2 потока еды
 };
 
 /* Всплывающее ESC-оверлей меню */
@@ -82,6 +83,8 @@ struct AppContext
 {
     struct GameScreens screens;     
     struct OverlayMenu overlay;
+    mtx_t ch_key_mutex;                 // Мьютекс клавиш управления
+    int shared_ch_key;                  // Общая нажатая клавиша для 2 потоков
     int is_running;
 };
 

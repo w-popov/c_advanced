@@ -55,7 +55,8 @@ typedef enum
 struct Snake
 {
     struct Pixel body[MAX_SNAKE_LENGTH]; 
-    int length;                          
+    int length;
+    int delay_ms;                          
     Direction dir;                       
 };
 
