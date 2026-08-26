@@ -41,8 +41,8 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 # Для Windows
 lib/libpdcurses.a:
 	@echo "Downloading PDCurses..."
-	curl -L -o pdcurses.tar.gz https://github.com || \
-	wget -O pdcurses.tar.gz https://github.com
+	curl -L -o pdcurses.tar.gz https://github.com/wmcbrine/PDCurses/archive/refs/tags/3.9.tar.gz || \
+	wget -O pdcurses.tar.gz https://github.com/wmcbrine/PDCurses/archive/refs/tags/3.9.tar.gz
 	tar -xf pdcurses.tar.gz
 	cd PDCurses-3.9/wincon && $(MAKE) -f Makefile WIDE=Y UTF8=Y
 	mkdir -p include lib
