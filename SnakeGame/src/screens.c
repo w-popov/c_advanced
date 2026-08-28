@@ -233,7 +233,7 @@ void game_render(struct AppContext *app)
     mtx_unlock(game->ptr_ch_key_mutex);
     // --
 
-    swprintf(status_buf, 128, L"Очки: %04d  |  [ESC] - Пауза | KEY: %d", game->score, key_to_show);
+    swprintf(status_buf, 128, L"Очки: %04d  |  [ESC] - Пауза | KEY: %d", game->snake.score, key_to_show);
     waddwstr(game->subwin_status, status_buf);
 
     // Нижнее окно: поле игры
@@ -242,12 +242,14 @@ void game_render(struct AppContext *app)
 
     render_foods(game);
 
+    // Основная змейка - ОБНОВИТЬ
     for (int i = 0; i < game->snake.length; ++i) 
     {
         int sx = game->snake.body[i].x;
         int sy = game->snake.body[i].y;
+        unsigned snake_valid_position = sx > 0 && sx < win_w - 1 && sy > 0 && sy < game_h - 1;
 
-        if (sx > 0 && sx < win_w - 1 && sy > 0 && sy < game_h - 1) 
+        if (snake_valid_position && game->snake.is_alive) 
         {
             wmove(game->subwin_game, sy, sx);
             if (i == 0) 
@@ -260,6 +262,29 @@ void game_render(struct AppContext *app)
             {
                 waddnwstr(game->subwin_game, &game->snake.body[i].image, 1);
             }
+        }
+    }
+    // 2 змейка ОБНОВИТЬ
+    for (int i = 0; i < game->two_snake.length; ++i)
+    {
+        int sx2 = game->two_snake.body[i].x;
+        int sy2 = game->two_snake.body[i].y;
+        unsigned snake_2_valid_position = sx2 > 0 && sx2 < win_w - 1 && sy2 > 0 && sy2 < game_h - 1;
+
+        if (snake_2_valid_position && game->two_snake.is_alive) 
+        {
+            wmove(game->subwin_game, sy2, sx2);
+            if (i == 0) 
+            {
+                wattron(game->subwin_game, A_BOLD);
+                waddnwstr(game->subwin_game, &game->two_snake.body[i].image, 1);
+                wattroff(game->subwin_game, A_BOLD);
+            } 
+            else 
+            {
+                waddnwstr(game->subwin_game, &game->two_snake.body[i].image, 1);
+            }
+
         }
     }
 

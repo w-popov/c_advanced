@@ -156,7 +156,7 @@ int main(void)
                     
                     if (check_collisions(&app.screens.gameplay_screen)) // столкновения
                     {
-                        stop_game_session(&app.screens.gameplay_screen); // Остановка потока при проигрыше
+                        stop_game_session(&app.screens.gameplay_screen); // Остановка потоков при проигрыше
                         app_switch_screen(&app, (struct I_GameScreen*)&app.screens.menu_screen);
                         continue;
                     }
@@ -166,7 +166,7 @@ int main(void)
         }
 
         struct timespec ts = { .tv_sec = 0, .tv_nsec = 1000000 }; 
-        thrd_sleep(&ts, NULL);  // поток в сон
+        thrd_sleep(&ts, NULL);  // главный поток на паузу
     }
 
     stop_game_session(&app.screens.gameplay_screen);

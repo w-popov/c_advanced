@@ -15,11 +15,11 @@ DEPS = $(OBJS:.o=.d)
 ifeq ($(OS),Windows_NT)
     EXEC = $(TARGET).exe
     CFLAGS += -Iinclude
-    LDFLAGS = -static -Llib -lpdcurses -lwinmm
+    LDFLAGS = -static -Llib -lpdcurses -lwinmm -lm
     DEPENDENCY = lib/libpdcurses.a
 else
     EXEC = $(TARGET)
-    LDFLAGS = -pthread -lncursesw 
+    LDFLAGS = -pthread -lncursesw -lm
     DEPENDENCY = linux_dep
 endif
 

@@ -24,6 +24,9 @@ struct ScreenGamePlay;
 /* Макс. кол-во единиц еды */
 #define MAX_NUM_FOOD            24
 
+/* Убить 2 змейку набрав очков */
+#define SCORE_DEAD_SNAKE        30
+
 /* Структура для представления объекта на экране */
 struct Pixel
 {
@@ -54,20 +57,25 @@ typedef enum
 /* Структура змейки */
 struct Snake
 {
-    struct Pixel body[MAX_SNAKE_LENGTH]; 
-    int length;
-    int delay_ms;                          
-    Direction dir;                       
+    struct Pixel body[MAX_SNAKE_LENGTH];    // Тело
+    unsigned is_alive;                      // Жива, показывать?
+    int length;                             // Длина змейки
+    int delay_ms;                           // Задержка движения
+    int score;                              // Очки                        
+    Direction dir;                          // Направление движения
 };
 
-// Обновление состояния змейки на каждом шаге
+// Обновление состояния 1 змейки на каждом шаге
 void update_snake_step(struct ScreenGamePlay *game);
+
+// Обновление состояния 2 змейки на каждом шаге
+void update_two_snake_step(struct ScreenGamePlay *game);
 
 // Проверка столкновений змейки с границами и самой собой
 bool check_collisions(struct ScreenGamePlay *game);
 
-// Генерация новой еды в случайной позиции
-// void generate_food(struct ScreenGamePlay *game);
+// Автопилот 2 змейки
+void auto_change_direction(struct ScreenGamePlay *game);
 
 // Генерация массива новой еды в случайных позициях
 void generate_foods(struct ScreenGamePlay *game);
