@@ -22,7 +22,7 @@ struct ScreenGamePlay;
 #define MAX_SNAKE_LENGTH        100
 
 /* Макс. кол-во единиц еды */
-#define MAX_NUM_FOOD            24
+#define MAX_NUM_FOOD            14
 
 /* Убить 2 змейку набрав очков */
 #define SCORE_DEAD_SNAKE        30
@@ -59,10 +59,11 @@ struct Snake
 {
     struct Pixel body[MAX_SNAKE_LENGTH];    // Тело
     unsigned is_alive;                      // Жива, показывать?
+    unsigned is_main;
     int length;                             // Длина змейки
     int delay_ms;                           // Задержка движения
-    int score;                              // Очки                        
-    Direction dir;                          // Направление движения
+    int score;                              // Очки
+    Direction dir;                          // Направление движения                      
 };
 
 // Обновление состояния 1 змейки на каждом шаге

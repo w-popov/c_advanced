@@ -227,13 +227,7 @@ void game_render(struct AppContext *app)
     wmove(game->subwin_status, 1, 2);
     wchar_t status_buf[128];
 
-    // ОТЛАДКА
-    mtx_lock(game->ptr_ch_key_mutex);
-    int key_to_show = game->_key;
-    mtx_unlock(game->ptr_ch_key_mutex);
-    // --
-
-    swprintf(status_buf, 128, L"Очки: %04d  |  [ESC] - Пауза | KEY: %d", game->snake.score, key_to_show);
+    swprintf(status_buf, 128, L"Очки: %04d  |  [ESC] - Пауза |", game->snake.score);
     waddwstr(game->subwin_status, status_buf);
 
     // Нижнее окно: поле игры

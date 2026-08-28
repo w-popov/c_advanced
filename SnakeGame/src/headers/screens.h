@@ -51,16 +51,15 @@ struct ScreenGamePlay
     WINDOW *subwin_game;                // Окно игрового поля
     mtx_t two_snake_mutex;              // Мьютекс 2 змейки для 3 потока
     mtx_t foods_mutex;                  // Мьютекс еды
+    int* ch_key;                        // Указатель на поле shared_ch_key структуры AppContext
     struct Snake snake;                 // Основная змейка
     struct Snake two_snake;             // Вторая змейка
     struct Food foods[MAX_NUM_FOOD];    // Массив еды
     int is_pause;                       // Пауза?
-    int* ch_key;                        // Указатель на поле shared_ch_key структуры AppContext
-    int _key; // ОТЛАДКА //
     volatile int is_running;            // Флаг что игра активна для потока еды
+    mtx_t* ptr_ch_key_mutex;            // Указатель на мьютекс клавиш управления (в AppContext)
     thrd_t two_snake_thrd;              // Дескриптор 3 потока второй змейки
     thrd_t food_thread;                 // Дескриптор 2 потока еды
-    mtx_t* ptr_ch_key_mutex;            // Указатель на мьютекс клавиш управления (в AppContext)
 };
 
 /* Всплывающее ESC-оверлей меню */
