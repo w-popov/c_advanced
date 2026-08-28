@@ -27,6 +27,9 @@ struct ScreenGamePlay;
 /* Убить 2 змейку набрав очков */
 #define SCORE_DEAD_SNAKE        30
 
+/* Макс кол-во пуль */
+#define MAX_BULLETS             50
+
 /* Структура для представления объекта на экране */
 struct Pixel
 {
@@ -66,6 +69,14 @@ struct Snake
     Direction dir;                          // Направление движения                      
 };
 
+/* Пуля */
+struct Bullet 
+{
+    struct Pixel bullet;
+    Direction dir;
+    int is_active;
+};
+
 // Обновление состояния 1 змейки на каждом шаге
 void update_snake_step(struct ScreenGamePlay *game);
 
@@ -89,6 +100,12 @@ int checkDirection(struct Snake*, int32_t);
 
 // Остановка фонового потока и очистка мьютекса
 void stop_game_session(struct ScreenGamePlay *game);
+
+// Стрелять
+void fire(struct ScreenGamePlay *game);
+
+// Движение пуль
+void update_bullets(struct ScreenGamePlay *game);
 
 
 #endif

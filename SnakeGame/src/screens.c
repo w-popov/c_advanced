@@ -237,6 +237,7 @@ void game_render(struct AppContext *app)
     render_foods(game);
 
     // Основная змейка - ОБНОВИТЬ
+    wattron(game->subwin_game, COLOR_PAIR(1));
     for (int i = 0; i < game->snake.length; ++i) 
     {
         int sx = game->snake.body[i].x;
@@ -258,7 +259,9 @@ void game_render(struct AppContext *app)
             }
         }
     }
+    wattroff(game->subwin_game, COLOR_PAIR(1));
     // 2 змейка ОБНОВИТЬ
+    wattron(game->subwin_game, COLOR_PAIR(3));
     for (int i = 0; i < game->two_snake.length; ++i)
     {
         int sx2 = game->two_snake.body[i].x;
@@ -281,6 +284,21 @@ void game_render(struct AppContext *app)
 
         }
     }
+    wattroff(game->subwin_game, COLOR_PAIR(3));
+
+    // КРИТИЧЕСКАЯ СЕКЦИЯ полет пули
+    wattron(game->subwin_game, COLOR_PAIR(2));
+    mtx_lock(&game->bullets_mutex);
+    for (int i = 0; i < MAX_BULLETS; ++i) 
+    {
+        if (game->bullets[i].is_active) 
+        {
+            wmove(game->subwin_game, game->bullets[i].bullet.y, game->bullets[i].bullet.x);
+            waddnwstr(game->subwin_game, &game->bullets[i].bullet.image, 1);
+        }
+    }
+    mtx_unlock(&game->bullets_mutex);
+    wattroff(game->subwin_game, COLOR_PAIR(2));
 
     wnoutrefresh(stdscr);
     wnoutrefresh(game->subwin_status);

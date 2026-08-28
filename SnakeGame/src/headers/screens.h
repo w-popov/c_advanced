@@ -51,6 +51,7 @@ struct ScreenGamePlay
     WINDOW *subwin_game;                // Окно игрового поля
     mtx_t two_snake_mutex;              // Мьютекс 2 змейки для 3 потока
     mtx_t foods_mutex;                  // Мьютекс еды
+    mtx_t bullets_mutex;                // Мьютекс для выстрелов
     int* ch_key;                        // Указатель на поле shared_ch_key структуры AppContext
     struct Snake snake;                 // Основная змейка
     struct Snake two_snake;             // Вторая змейка
@@ -60,6 +61,7 @@ struct ScreenGamePlay
     mtx_t* ptr_ch_key_mutex;            // Указатель на мьютекс клавиш управления (в AppContext)
     thrd_t two_snake_thrd;              // Дескриптор 3 потока второй змейки
     thrd_t food_thread;                 // Дескриптор 2 потока еды
+    struct Bullet bullets[MAX_BULLETS]; // Массив снарядов бота
 };
 
 /* Всплывающее ESC-оверлей меню */

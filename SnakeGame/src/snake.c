@@ -193,6 +193,8 @@ int two_snake_thread_func (void *arg)
     time_speed = 10000.0;
     #endif
     clock_t last_snake_move_time = clock();
+    clock_t last_shoot_time = clock();
+    double next_shoot_interval = 0.1 + (double)(rand() % 41) / 100.0;
 
     while (game->is_running) 
     {
@@ -211,53 +213,27 @@ int two_snake_thread_func (void *arg)
         double elapsed_seconds = (double)(current_time - last_snake_move_time) / CLOCKS_PER_SEC;
         double required_delay_seconds = (double)game->two_snake.delay_ms / time_speed;
 
+        double elapsed_shoot_seconds = (double)(current_time - last_shoot_time) / CLOCKS_PER_SEC;
+        if (elapsed_shoot_seconds >= next_shoot_interval)
+        {
+            fire(game);
+
+            last_shoot_time = current_time;
+            next_shoot_interval = 0.1 + (double)(rand() % 41) / 100.0;
+        }
+
         if (elapsed_seconds >= required_delay_seconds)
         {
             auto_change_direction(game);    // автопилот
             update_two_snake_step(game);    // сделать шаг
             last_snake_move_time = current_time;
         }
-        
 
         thrd_sleep(&ts, NULL);
     }
     
     return thrd_success;
 }
-
-#if 0
-// 1ШТ. Генерация еды. ScreenGamePlay - владелец
-void generate_food(struct ScreenGamePlay *game) 
-{
-    int max_game_y, max_game_x;
-    if (game->subwin_game) 
-    {
-        getmaxyx(game->subwin_game, max_game_y, max_game_x);
-    } 
-    else 
-    {
-        return;
-    }
-
-    bool on_snake;
-    do {
-        on_snake = false;
-        game->food.x = 1 + rand() % (max_game_x - 2);
-        game->food.y = 1 + rand() % (max_game_y - 2);
-
-        for (int i = 0; i < game->snake.length; ++i) 
-        {
-            if (game->food.x == game->snake.body[i].x && game->food.y == game->snake.body[i].y) 
-            {
-                on_snake = true;
-                break;
-            }
-        }
-    } while (on_snake);
-
-    game->food.image = L'★';
-}
-#endif
 
 // Инициализация новой игровой сессии, запуск потоков
 void init_game_session(struct ScreenGamePlay *game, int max_game_w, int max_game_h) 
@@ -273,7 +249,15 @@ void init_game_session(struct ScreenGamePlay *game, int max_game_w, int max_game
     /* Мьютекс потока еды */
     mtx_init(&game->foods_mutex, mtx_plain);
     /* Мьютекс потока 2 змейки */
-    mtx_init(&game->two_snake_mutex, mtx_plain); 
+    mtx_init(&game->two_snake_mutex, mtx_plain);
+    /* Мьютекс пуль */
+    mtx_init(&game->bullets_mutex, mtx_plain);
+
+    // Очистка массива пуль
+    for (int i = 0; i < MAX_BULLETS; ++i) 
+    {
+        game->bullets[i].is_active = 0;
+    }
     
     int max_y, max_x;
     getmaxyx(stdscr, max_y, max_x);
@@ -350,7 +334,7 @@ void init_game_session(struct ScreenGamePlay *game, int max_game_w, int max_game
     }
 }
 
-// // Шаг змейки
+// Шаг змейки
 static void snake_step(struct ScreenGamePlay *game, struct Snake *snake)
 {
     if (!game || !snake || !game->subwin_game) return;
@@ -412,118 +396,14 @@ static void snake_step(struct ScreenGamePlay *game, struct Snake *snake)
 // Физический шаг движения 2 змейки
 void update_two_snake_step(struct ScreenGamePlay *game)
 {
-    // int old_tail_x = game->two_snake.body[game->two_snake.length - 1].x;
-    // int old_tail_y = game->two_snake.body[game->two_snake.length - 1].y;
-
-    // // Сдвиг сегментов назад
-    // for (int i = game->two_snake.length - 1; i > 0; --i) 
-    // {
-    //     game->two_snake.body[i].x = game->two_snake.body[i - 1].x;
-    //     game->two_snake.body[i].y = game->two_snake.body[i - 1].y;
-    // }
-
-    // // Сдвиг головы вперед
-    // switch (game->two_snake.dir) 
-    // {
-    //     case DIR_UP:    game->two_snake.body[0].y -= 1; break;
-    //     case DIR_DOWN:  game->two_snake.body[0].y += 1; break;
-    //     case DIR_LEFT:  game->two_snake.body[0].x -= 1; break;
-    //     case DIR_RIGHT: game->two_snake.body[0].x += 1; break;
-    // }
-
-    // int max_game_y, max_game_x;
-    // if (!game->subwin_game) return;
-    // getmaxyx(game->subwin_game, max_game_y, max_game_x);
-    // time_t current_time = time(NULL);
-
-    // // КРИТИЧЕСКАЯ СЕКЦИЯ
-    // mtx_lock(&game->foods_mutex);
-    // for (int i = 0; i < MAX_NUM_FOOD; ++i)
-    // {
-    //     if (game->foods[i].is_visible && game->foods[i].is_enable)
-    //     {
-    //         // Если голова наступила на текущую еду
-    //         if (game->two_snake.body[0].x == game->foods[i].food.x && game->two_snake.body[0].y == game->foods[i].food.y)
-    //         {
-    //             game->two_snake.score += 10;
-    //             game->foods[i].is_enable = 0;
-    //             game->foods[i].is_visible = 0;
-
-    //             // Увеличение длины змейки
-    //             if (game->two_snake.length < MAX_SNAKE_LENGTH) 
-    //             {
-    //                 game->two_snake.body[game->two_snake.length].x = old_tail_x;
-    //                 game->two_snake.body[game->two_snake.length].y = old_tail_y;
-    //                 game->two_snake.body[game->two_snake.length].image = L'□';
-    //                 game->two_snake.length++;
-    //             }
-    //             generate_single_food(game, i, current_time, max_game_x, max_game_y);
-    //             break;
-    //         }
-    //     }
-    // }
-    // mtx_unlock(&game->foods_mutex);
     snake_step(game, &game->two_snake);
 }
 
-////////////////////////////////////////////////////////////////////////////////////
 
 // Физический шаг движения 1 змейки
 void update_snake_step(struct ScreenGamePlay *game) 
 {
-    // int old_tail_x = game->snake.body[game->snake.length - 1].x;
-    // int old_tail_y = game->snake.body[game->snake.length - 1].y;
-
-    // // Сдвиг сегментов назад
-    // for (int i = game->snake.length - 1; i > 0; --i) 
-    // {
-    //     game->snake.body[i].x = game->snake.body[i - 1].x;
-    //     game->snake.body[i].y = game->snake.body[i - 1].y;
-    // }
-
-    // // Сдвиг головы вперед
-    // switch (game->snake.dir) 
-    // {
-    //     case DIR_UP:    game->snake.body[0].y -= 1; break;
-    //     case DIR_DOWN:  game->snake.body[0].y += 1; break;
-    //     case DIR_LEFT:  game->snake.body[0].x -= 1; break;
-    //     case DIR_RIGHT: game->snake.body[0].x += 1; break;
-    // }
-
-    // int max_game_y, max_game_x;
-    // if (!game->subwin_game) return;
-    // getmaxyx(game->subwin_game, max_game_y, max_game_x);
-    // time_t current_time = time(NULL);
-
-    // // КРИТИЧЕСКАЯ СЕКЦИЯ
-    // mtx_lock(&game->foods_mutex);
-    // for (int i = 0; i < MAX_NUM_FOOD; ++i)
-    // {
-    //     if (game->foods[i].is_visible && game->foods[i].is_enable)
-    //     {
-    //         // Если голова наступила на текущую еду
-    //         if (game->snake.body[0].x == game->foods[i].food.x && game->snake.body[0].y == game->foods[i].food.y)
-    //         {
-    //             game->snake.score += 10;
-    //             game->foods[i].is_enable = 0;
-    //             game->foods[i].is_visible = 0;
-
-    //             // Увеличение длины змейки
-    //             if (game->snake.length < MAX_SNAKE_LENGTH) 
-    //             {
-    //                 game->snake.body[game->snake.length].x = old_tail_x;
-    //                 game->snake.body[game->snake.length].y = old_tail_y;
-    //                 game->snake.body[game->snake.length].image = L'○';
-    //                 game->snake.length++;
-    //             }
-    //             generate_single_food(game, i, current_time, max_game_x, max_game_y);
-    //             break;
-    //         }
-    //     }
-    // }
-    // mtx_unlock(&game->foods_mutex);
     snake_step(game, &game->snake);
-
 
     /* Если набрано SCORE_DEAD_SNAKE очков, то убить 2 змейку */
     if (game->two_snake.is_alive)
@@ -587,6 +467,71 @@ void render_foods(struct ScreenGamePlay *game)
     }
     
     mtx_unlock(&game->foods_mutex);
+}
+
+// Стрелять
+void fire(struct ScreenGamePlay *game)
+{
+    mtx_lock(&game->bullets_mutex);
+    for (int i = 0; i < MAX_BULLETS; ++i) 
+    {
+        if (!game->bullets[i].is_active) 
+        {
+            game->bullets[i].bullet.x = game->two_snake.body[0].x;
+            game->bullets[i].bullet.y = game->two_snake.body[0].y;
+            game->bullets[i].bullet.image = L'*';
+            game->bullets[i].dir = game->two_snake.dir;
+            game->bullets[i].is_active = 1;
+            break;
+        }
+    }
+    mtx_unlock(&game->bullets_mutex);
+}
+
+// Движение пуль
+void update_bullets(struct ScreenGamePlay *game)
+{
+    if (!game || !game->subwin_game) return;
+
+    int max_x, max_y;
+    getmaxyx(game->subwin_game, max_y, max_x);
+
+    mtx_lock(&game->bullets_mutex);
+    for (int i = 0; i < MAX_BULLETS; ++i) 
+    {
+        if (!game->bullets[i].is_active) continue;
+        mvwaddch(game->subwin_game, game->bullets[i].bullet.y, game->bullets[i].bullet.x, ' ');
+
+        switch (game->bullets[i].dir) 
+        {
+            case DIR_UP:    game->bullets[i].bullet.y -= 1; break;
+            case DIR_DOWN:  game->bullets[i].bullet.y += 1; break;
+            case DIR_LEFT:  game->bullets[i].bullet.x -= 1; break;
+            case DIR_RIGHT: game->bullets[i].bullet.x += 1; break;
+        }
+
+        // проверка попадания в основную змейку
+        if (game->snake.is_alive)
+        {
+            for (int j = 0; j < game->snake.length; ++j)
+            {
+                if (game->bullets[i].bullet.x == game->snake.body[j].x &&
+                    game->bullets[i].bullet.y == game->snake.body[j].y)
+                {
+                    game->snake.is_alive = 0;
+                    game->bullets[i].is_active = 0;
+                    break;
+                }
+            }
+        }
+
+        if (game->bullets[i].bullet.x <= 0 || game->bullets[i].bullet.x >= max_x - 1 ||
+            game->bullets[i].bullet.y <= 0 || game->bullets[i].bullet.y >= max_y - 1) 
+        {
+            game->bullets[i].is_active = 0;
+        }
+    }
+    mtx_unlock(&game->bullets_mutex);
 }
 
 // Остановка фоновых потоков и очистка мьютекса

@@ -7,8 +7,15 @@ int main(void)
 {
     setlocale(LC_ALL, "");
     initscr();
-    // start_color();
     clear();
+    start_color();
+    use_default_colors();
+    assume_default_colors(COLOR_WHITE, COLOR_BLACK);
+    // Цвет пары:
+    init_pair(1, COLOR_GREEN,  COLOR_BLACK); // Зеленый для 1 змейки
+    init_pair(2, COLOR_RED,    COLOR_BLACK); // Красный для пуль
+    init_pair(3, COLOR_YELLOW, COLOR_BLACK); // Желтый для 2 змейки
+    
     noecho();
     cbreak();
     curs_set(0);
@@ -147,19 +154,41 @@ int main(void)
                 app.screens.gameplay_screen.is_pause = 0;
 
                 clock_t current_time = clock();
+                
+                // скорость пули
+                static clock_t last_bullet_move_time = 0; 
+                if (last_bullet_move_time == 0) last_bullet_move_time = clock();
+                double elapsed_bullet_seconds = (double)(current_time - last_bullet_move_time) / CLOCKS_PER_SEC;
+                double bullet_delay_seconds = 0.005; // скорость
+                
+                if (elapsed_bullet_seconds >= bullet_delay_seconds)
+                {
+                    update_bullets(&app.screens.gameplay_screen);
+                    if (!app.screens.gameplay_screen.snake.is_alive)
+                    {
+                        stop_game_session(&app.screens.gameplay_screen);
+                        app_switch_screen(&app, (struct I_GameScreen*)&app.screens.menu_screen); // В меню
+                        continue;
+                    }
+                    last_bullet_move_time = current_time;
+                }
+
+                // скорость обновления основной змейки
                 double elapsed_seconds = (double)(current_time - last_snake_move_time) / CLOCKS_PER_SEC;
                 double required_delay_seconds = (double)app.screens.gameplay_screen.snake.delay_ms / time_speed;
 
+                // скорость змейки
                 if (elapsed_seconds >= required_delay_seconds) 
                 { 
                     update_snake_step(&app.screens.gameplay_screen);    // шаг змейки
-                    
+                    update_bullets(&app.screens.gameplay_screen);
                     if (check_collisions(&app.screens.gameplay_screen)) // столкновения
                     {
                         stop_game_session(&app.screens.gameplay_screen); // Остановка потоков при проигрыше
                         app_switch_screen(&app, (struct I_GameScreen*)&app.screens.menu_screen);
                         continue;
                     }
+
                     last_snake_move_time = current_time; 
                 }
             }
