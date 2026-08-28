@@ -15,7 +15,7 @@ int main(void)
     init_pair(1, COLOR_GREEN,  COLOR_BLACK); // Зеленый для 1 змейки
     init_pair(2, COLOR_RED,    COLOR_BLACK); // Красный для пуль
     init_pair(3, COLOR_YELLOW, COLOR_BLACK); // Желтый для 2 змейки
-    
+
     noecho();
     cbreak();
     curs_set(0);
@@ -159,7 +159,7 @@ int main(void)
                 static clock_t last_bullet_move_time = 0; 
                 if (last_bullet_move_time == 0) last_bullet_move_time = clock();
                 double elapsed_bullet_seconds = (double)(current_time - last_bullet_move_time) / CLOCKS_PER_SEC;
-                double bullet_delay_seconds = 0.005; // скорость
+                double bullet_delay_seconds = 0.065; // скорость
                 
                 if (elapsed_bullet_seconds >= bullet_delay_seconds)
                 {
