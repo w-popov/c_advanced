@@ -134,6 +134,8 @@ void draw_plots(struct PlotDrawFun plots[], size_t nums_draw_plots, const char *
             RGBA *color_title = CreateRGBColor(plots[i].color.r, plots[i].color.g, plots[i].color.b);
             DrawText(imageReference->image, 100, heigt_title, plots[i].title, wcslen(plots[i].title), color_title);
         }
+        wchar_t *sign = L"cource work 2 (C adv) Popov V.G";
+        DrawText(imageReference->image, 600, 25, sign, wcslen(sign), CreateRGBColor(0, 0, 0));
         // Запись в файл
         ByteArray *pngdata = ConvertToPNG(imageReference->image);
         const char* actual_filename = (filename == NULL) ? "plot.png" : filename;
