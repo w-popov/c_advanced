@@ -1,42 +1,29 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "numerical_app.h"
-#include "pbPlots.h"
-#include "supportLib.h"
-#include <math.h>
+#include "draw_plots.h"
+#include <locale.h>
 
 int main(void)
 {
-    const int num_points = 260; 
-    double x[num_points];
-    double y[num_points];
-    double current_x = -2.3;
+    setlocale(LC_ALL, "");
 
-    for(int i = 0; i < num_points; i++) 
-    {
-        x[i] = current_x;
-        y[i] = f(current_x);
-        current_x += 0.01;
-    }
-
-    // Выделение памяти под объект изображения
-    RGBABitmapImageReference *imageRef = CreateRGBABitmapImageReference();
-    StringReference str_ref_err = {.string = L"Err"};
-
-    // Отрисовка графика (Ширина: 800px, Высота: 600px)
-    DrawScatterPlot(imageRef, 800, 600, x, num_points, y, num_points, &str_ref_err);
-
-    ByteArray *pngData = ConvertToPNG(imageRef->image);
-    WriteToFile(pngData, "plot.png");
-
-    // Освобождение ресурсов
-    FreeAllocations();
+    struct PlotDrawFun pdf[2] = {
+        {
+            .color = {.r = 0.8, .g = 0, .b = 0},
+            .points = calculate_function(-2.5, 260, f),
+            .title = L"8x^4 + 32x^3 + 40x^2 + 16x + 1"
+        },
+        {
+            .color = {.r = 0, .g = 0.8, .b = 0},
+            .points = calculate_function(-1.1, 260, f2),
+            .title = L"(x-2)^3 - 1"
+        },
+    };    
     
-    #if defined(_WIN32) || defined(_WIN64)
-        system("start plot.png");
-    #else
-        system("xdg-open plot.png");
-    #endif
-    
+    draw_plots(pdf, 2, "plot.png");
+
+    free_array_points(pdf, 2);
+
     return 0;
 }
