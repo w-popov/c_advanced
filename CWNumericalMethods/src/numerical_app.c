@@ -1,12 +1,17 @@
 #include "numerical_app.h"
 
 
-double f(double x) 
+double f1(double x) 
 {
-    return 8 * pow(x, 4) + 32 * pow(x, 3) + 40 * pow(x, 2) + 16 * x + 1;
+    return 0.6 * x + 3.;
 }
 
 double f2(double x) 
 {
-    return pow(x - 2, 3) - 1;
+    return pow(x - 2, 3) - 1.;
+}
+
+double f3(double x)
+{
+    return 3. / x;
 }

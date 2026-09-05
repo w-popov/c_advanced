@@ -8,36 +8,39 @@
 /**
  * @warning ВЫДЕЛЯЕТ ПАМЯТЬ
  * @brief Создать массив точек графика
- * @param current_x начать с этого значения
+ * @param start_x начать с этого значения
+ * @param end_x до этого
  * @param num_points количесво точек
  * @param function вычислитель 
  */
 struct ArrayPointsXY calculate_function
-(double current_x, size_t num_points, Func function)
+(double start_x, double end_x, size_t num_points, Func function)
 {
     struct ArrayPointsXY arrpxy;
+
     double *ptx = (double*)malloc(num_points * sizeof(double));
     double *pty = (double*)malloc(num_points * sizeof(double));
 
-    if (ptx == NULL || pty == NULL)
-    {
-        free(ptx);
-        free(pty);
-        perror("\nMemory allocation error in calculate_function() Exit...\n");
+    if (ptx == NULL || pty == NULL) {
+        free(ptx); free(pty);
+        perror("\nMemory allocation error\n");
         exit(1);
     }
+    
+    // Вычисление шага
+    double step = (end_x - start_x) / (double)(num_points - 1);
+    double current_x = start_x;
 
-    for(size_t i = 0; i < num_points; i++) 
+    for (size_t i = 0; i < num_points; ++i) 
     {
         ptx[i] = current_x;
         pty[i] = function(current_x);
-        current_x += 0.01;
+        current_x += step;
     }
 
     arrpxy.x = ptx;
     arrpxy.y = pty;
     arrpxy.num_points = num_points;
-    arrpxy.function = function;
 
     return arrpxy;
 }
@@ -107,8 +110,15 @@ void draw_plots(struct PlotDrawFun plots[], size_t nums_draw_plots, const char *
     ScatterPlotSettings *settings = GetDefaultScatterPlotSettings();
     settings->width = 1024;
     settings->height = 780;
-    settings->autoBoundaries = true;
-    settings->autoPadding = true;
+    settings->autoBoundaries = 0;
+    settings->autoPadding = 1;
+    /* !Значения ограничений должны быть не менее переданных
+     в calculate_function(start_x, end_x, ...) */
+    settings->xMin = -6.0;
+    settings->xMax = 6.0;
+    settings->yMin = -10.0; // от -10
+    settings->yMax = 10.0;  // до 10 по вертикали
+
     settings->xLabel = L"X axis";
     settings->xLabelLength = wcslen(settings->xLabel); 
     settings->yLabel = L"Y axis";
@@ -127,15 +137,16 @@ void draw_plots(struct PlotDrawFun plots[], size_t nums_draw_plots, const char *
     // Сохранение в файл, если отрисовка успешна
     if (success) 
     {
-        double heigt_title = 25.;
+        double heigt_title = 15.;
         for (size_t i = 0; i < nums_draw_plots; ++i, heigt_title += 20)
         {
             // Отрисовка текста заголовка цветом графика 
             RGBA *color_title = CreateRGBColor(plots[i].color.r, plots[i].color.g, plots[i].color.b);
-            DrawText(imageReference->image, 100, heigt_title, plots[i].title, wcslen(plots[i].title), color_title);
+            DrawText(imageReference->image, 180, heigt_title, plots[i].title, wcslen(plots[i].title), color_title);
         }
         wchar_t *sign = L"cource work 2 (C adv) Popov V.G";
-        DrawText(imageReference->image, 600, 25, sign, wcslen(sign), CreateRGBColor(0, 0, 0));
+        DrawText(imageReference->image, 600, 15., sign, wcslen(sign), CreateRGBColor(0, 0, 0));
+        
         // Запись в файл
         ByteArray *pngdata = ConvertToPNG(imageReference->image);
         const char* actual_filename = (filename == NULL) ? "plot.png" : filename;

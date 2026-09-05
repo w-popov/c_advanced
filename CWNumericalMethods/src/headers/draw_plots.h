@@ -8,6 +8,9 @@ extern "C" {
 #include <wchar.h>
 #include "numerical_app.h"
 
+// Количество графиков
+#define NUMS_PLOTS      3
+
 /**
  * Цвет RGB
  */
@@ -48,7 +51,7 @@ void draw_plots(struct PlotDrawFun plots[], size_t nums_draw_plots, const char *
  * Создать массив точек
  */
 struct ArrayPointsXY calculate_function
-(double current_x, size_t num_points, Func function);
+(double start_x, double end_x, size_t num_points, Func function);
 
 /**
  * Очистить память массивов точек
