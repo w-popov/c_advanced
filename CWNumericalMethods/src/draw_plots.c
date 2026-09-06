@@ -101,21 +101,16 @@ void draw_plots(struct PlotDrawFun plots[], size_t nums_draw_plots, const char *
         series_array[i]->xsLength = plots[i].points.num_points;
         series_array[i]->ys = plots[i].points.y;
         series_array[i]->ysLength = plots[i].points.num_points;
-        series_array[i]->linearInterpolation = true;
-        
-        // тип линии
-        series_array[i]->lineType = L"solid";
-        series_array[i]->lineTypeLength = wcslen(series_array[i]->lineType);
-        // толщина
-        series_array[i]->lineThickness = 2;                          
+        series_array[i]->linearInterpolation = 0;   //---------------> НЕ ВКЛЮЧАТЬ!
+                               
         // цвет rgb
         series_array[i]->color = CreateRGBColor(plots[i].color.r, plots[i].color.g, plots[i].color.b);
     }
 
     // Общие настройки холста
     ScatterPlotSettings *settings = GetDefaultScatterPlotSettings();
-    settings->width = 1024;
-    settings->height = 780;
+    settings->width = 1280;
+    settings->height = 860;
     settings->autoBoundaries = 0;
     settings->autoPadding = 1;
     /* !Значения ограничений должны быть не менее переданных

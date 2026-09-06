@@ -11,7 +11,9 @@ int main(void)
     setlocale(LC_NUMERIC, "C");
 
     struct AppProperties props = parse_json("properties.json");
-    props.pdf = make_properties(&props);    
+    props.pdf = make_properties(&props);   
+    
+    
     draw_plots(props.pdf, props.size_prors_array, "plot.png");
 
     free_array_points(&props, props.size_prors_array);
