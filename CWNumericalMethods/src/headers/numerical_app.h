@@ -8,16 +8,19 @@ extern "C" {
 
 #include <wchar.h>
 #include <math.h>
+#include "math_parser.h"
+
+struct PlotDrawFun;
 
 /**
  * Функция вычислитель (указатель)
  */
-typedef double (*Func)(double);
+typedef double (*Func)(wchar_t*, double);
 
-double f1(double x);
-double f2(double x);
-double f3(double x);
-
+/**
+ * Ф-ция вычисления выражения math функций
+ */
+double calculate(wchar_t *expr, double x);
 
 #ifdef __cplusplus
 }
