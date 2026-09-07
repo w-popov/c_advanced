@@ -15,13 +15,12 @@
  * @param num_points количесво точек
  * @param function вычислитель 
  */
-struct ArrayPointsXY calculate_function
-(double start_x, double end_x, size_t num_points, wchar_t *title, Func function)
+struct ArrayPointsXY calculate_function(struct PlotProperties *pp, Func function)
 {
     struct ArrayPointsXY arrpxy;
 
-    double *ptx = (double*)malloc(num_points * sizeof(double));
-    double *pty = (double*)malloc(num_points * sizeof(double));
+    double *ptx = (double*)malloc(pp->num_points * sizeof(double));
+    double *pty = (double*)malloc(pp->num_points * sizeof(double));
 
     if (ptx == NULL || pty == NULL) 
     {
@@ -31,19 +30,21 @@ struct ArrayPointsXY calculate_function
     }
     
     // Вычисление шага
-    double step = (end_x - start_x) / (double)(num_points - 1);
-    double current_x = start_x;
+    double range = pp->end_x - pp->start_x;
+    size_t last_index = pp->num_points - 1;
 
-    for (size_t i = 0; i < num_points; ++i) 
+    for (size_t i = 0; i <= last_index; ++i) 
     {
+        // вычисление координаты x
+        double current_x = pp->start_x + (range * (double)i) / (double)last_index;
+        
         ptx[i] = current_x;
-        pty[i] = function(title, current_x);
-        current_x += step;
+        pty[i] = function(pp, current_x);
     }
 
     arrpxy.x = ptx;
     arrpxy.y = pty;
-    arrpxy.num_points = num_points;
+    arrpxy.num_points = pp->num_points;
 
     return arrpxy;
 }
@@ -344,10 +345,11 @@ struct PlotDrawFun* make_properties(struct AppProperties *props)
     {
         pdf[i].title = props->plots_props_array[i].expr;
         pdf[i].color = props->plots_props_array[i].color;
-        double start_x = props->plots_props_array[i].start_x;
-        double end_x = props->plots_props_array[i].end_x;
-        size_t num_points = props->plots_props_array[i].num_points;
-        pdf[i].points = calculate_function(start_x, end_x, num_points, pdf[i].title, calculate);
+        // компилировать текстовые формулы в rpn один раз для последующих вычислений
+        size_t rpn_cnt = compile_to_rpn(pdf[i].title, props->plots_props_array[i].rpn);
+        props->plots_props_array[i].rpn_count = rpn_cnt;
+
+        pdf[i].points = calculate_function(&(props->plots_props_array[i]), calculate);
     }
 
     return pdf;

@@ -10,17 +10,17 @@ extern "C" {
 #include <math.h>
 #include "math_parser.h"
 
-struct PlotDrawFun;
+struct PlotProperties;
 
 /**
  * Функция вычислитель (указатель)
  */
-typedef double (*Func)(wchar_t*, double);
+typedef double (*Func)(struct PlotProperties *, double);
 
 /**
  * Ф-ция вычисления выражения math функций
  */
-double calculate(wchar_t *expr, double x);
+double calculate(struct PlotProperties *pp, double x);
 
 #ifdef __cplusplus
 }

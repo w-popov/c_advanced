@@ -30,7 +30,6 @@ struct ArrayPointsXY
     size_t num_points;
     double *x;
     double *y;
-    Func function;
 };
 
 /**
@@ -45,6 +44,7 @@ struct PlotDrawFun
 
 /**
  * Настройки в JSON файле
+ * (Для вычислений)
  */
 struct PlotProperties
 {
@@ -52,7 +52,9 @@ struct PlotProperties
     double start_x;
     double end_x;
     size_t num_points;
+    size_t rpn_count;
     struct ColorDraw color;
+    struct Token rpn[MAX_TOKENS];
 };
 
 /**
@@ -73,8 +75,7 @@ void draw_plots(struct PlotDrawFun plots[], size_t nums_draw_plots, const char *
 /**
  * Создать массив точек
  */
-struct ArrayPointsXY calculate_function
-(double start_x, double end_x, size_t num_points, wchar_t *title, Func function);
+struct ArrayPointsXY calculate_function(struct PlotProperties *pp, Func function);
 
 /**
  * Очистить память

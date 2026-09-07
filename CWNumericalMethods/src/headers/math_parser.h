@@ -19,10 +19,10 @@ extern "C" {
 // ======================== ТОКЕНИЗАТОР ================================
 
 // Максимальное количество токенов в выражении
-#define MAX_TOKENS      512
+#define MAX_TOKENS      256
 
 // Максимальная длина одного токена
-#define MAX_VAL_LEN     256
+#define MAX_VAL_LEN     128
 
 // Перечисление типов токенов
 typedef enum 
@@ -111,6 +111,9 @@ int is_more_precedence(struct Token top, struct OpProperties op_props);
 
 // Алгоритм
 size_t shunting_yard_parse(const struct Token* tokens, size_t tokens_count, struct Token* rpn_out);
+
+// Компиляция выражения обратной польсой записи
+size_t compile_to_rpn(wchar_t *expr, struct Token* rpn_out);
 
 // Вычислить rpn (eval)
 double eval_rpn(const struct Token* rpn, size_t rpn_count, double x_value);

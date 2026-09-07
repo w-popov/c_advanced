@@ -592,3 +592,30 @@ double eval_rpn(const struct Token* rpn, size_t rpn_count, double x_value)
     return eval_stack[0];
 }
 
+/**
+ * Компиляция выражения обратной польсой записи
+*/
+size_t compile_to_rpn(wchar_t *expr, struct Token* rpn_out) 
+{
+    size_t len = wcstombs(NULL, expr, 0);
+    if (len == (size_t)-1) 
+    {
+        fprintf(stderr, "Error: Failed to convert wide string\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    char *expr_char = (char*)malloc(len + 1);
+    if (!expr_char) 
+    {
+        fprintf(stderr, "Error: Memory allocation failed\n");
+        exit(EXIT_FAILURE);
+    }
+    wcstombs(expr_char, expr, len + 1);
+    
+    struct Token tokens[MAX_TOKENS];
+    size_t count = tokenize(expr_char, tokens);
+    size_t rpn_count = shunting_yard_parse(tokens, count, rpn_out);
+    
+    free(expr_char);
+    return rpn_count;
+}
