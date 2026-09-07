@@ -40,6 +40,7 @@ struct PlotDrawFun
     struct ArrayPointsXY points;
     struct ColorDraw color;
     wchar_t *title;
+    int fun_number;
 };
 
 /**
@@ -48,6 +49,7 @@ struct PlotDrawFun
  */
 struct PlotProperties
 {
+    int F;
     wchar_t *expr;
     double start_x;
     double end_x;
@@ -65,6 +67,8 @@ struct AppProperties
     struct PlotDrawFun *pdf;
     struct PlotProperties *plots_props_array;
     size_t size_prors_array;
+    double eps_1;
+    double eps_2;
 };
 
 /**
@@ -86,6 +90,9 @@ void free_array_points(struct AppProperties *ap, size_t size);
 
 // Функция чтения JSON файла в строку
 char* read_JSON_file_to_string(const char *filename);
+
+// Функция для генерации JSON файла настроек
+int create_properties_json(const char *filename);
 
 // Парсинг JSON
 struct AppProperties parse_json(const char *filename);

@@ -140,11 +140,14 @@ void draw_plots(struct PlotDrawFun plots[], size_t nums_draw_plots, const char *
     if (success) 
     {
         double heigt_title = 15.;
+        wchar_t title_buffer[128];
+
         for (size_t i = 0; i < nums_draw_plots; ++i, heigt_title += 20)
         {
             // Отрисовка текста заголовка цветом графика 
             RGBA *color_title = CreateRGBColor(plots[i].color.r, plots[i].color.g, plots[i].color.b);
-            DrawText(imageReference->image, 180, heigt_title, plots[i].title, wcslen(plots[i].title), color_title);
+            swprintf(title_buffer, 128, L"F%d = %ls", plots[i].fun_number, plots[i].title);
+            DrawText(imageReference->image, 180, heigt_title, title_buffer, wcslen(title_buffer), color_title);
         }
         wchar_t *sign = L"cource work 2 (C adv) Popov V.G";
         DrawText(imageReference->image, 600, 15., sign, wcslen(sign), CreateRGBColor(0, 0, 0));
@@ -181,8 +184,19 @@ void draw_plots(struct PlotDrawFun plots[], size_t nums_draw_plots, const char *
  */
 char* read_JSON_file_to_string(const char *json_filename)
 {
+    // Открыть файл json. Если его нет, создать и открыть
     FILE *file = fopen(json_filename, "rb");
     if (!file) 
+    {
+        int status = create_properties_json(json_filename);
+        if (!status)
+        {
+            fprintf(stderr, "Failed to open file: %s\n", json_filename);
+            return NULL;
+        }
+        file = fopen(json_filename, "rb");
+    }
+    if (!file)
     {
         fprintf(stderr, "Failed to open file: %s\n", json_filename);
         return NULL;
@@ -206,6 +220,99 @@ char* read_JSON_file_to_string(const char *json_filename)
     fclose(file);
 
     return buffer;
+}
+
+// Функция для генерации JSON файла настроек
+int create_properties_json(const char *filename) 
+{
+    // корневой объект {}
+    cJSON *root = cJSON_CreateObject();
+    if (root == NULL)
+        return 0;
+
+    // массив "inputs" []
+    cJSON *inputs = cJSON_AddArrayToObject(root, "inputs");
+    if (inputs == NULL) 
+    {
+        cJSON_Delete(root);
+        return 0;
+    }
+
+    // График F1
+    cJSON *graph1 = cJSON_CreateObject();
+    cJSON_AddStringToObject(graph1, "expr", "0.6 * x + 3");
+    cJSON_AddNumberToObject(graph1, "F", 1);
+    cJSON_AddNumberToObject(graph1, "start_x", -6.0);
+    cJSON_AddNumberToObject(graph1, "end_x", 6.0);
+    cJSON_AddNumberToObject(graph1, "num_points", 10000);
+    
+    cJSON *color1 = cJSON_CreateObject();
+    cJSON_AddNumberToObject(color1, "r", 0.8);
+    cJSON_AddNumberToObject(color1, "g", 0.0);
+    cJSON_AddNumberToObject(color1, "b", 0.0);
+    cJSON_AddItemToObject(graph1, "color", color1);
+    
+    cJSON_AddItemToArray(inputs, graph1);
+
+    // График F2
+    cJSON *graph2 = cJSON_CreateObject();
+    cJSON_AddStringToObject(graph2, "expr", "(x - 2) ^ 3 - 1");
+    cJSON_AddNumberToObject(graph2, "F", 2);
+    cJSON_AddNumberToObject(graph2, "start_x", -6.0);
+    cJSON_AddNumberToObject(graph2, "end_x", 6.0);
+    cJSON_AddNumberToObject(graph2, "num_points", 10000);
+    
+    cJSON *color2 = cJSON_CreateObject();
+    cJSON_AddNumberToObject(color2, "r", 0.0);
+    cJSON_AddNumberToObject(color2, "g", 0.7);
+    cJSON_AddNumberToObject(color2, "b", 0.0);
+    cJSON_AddItemToObject(graph2, "color", color2);
+    
+    cJSON_AddItemToArray(inputs, graph2);
+
+    // График F3
+    cJSON *graph3 = cJSON_CreateObject();
+    cJSON_AddStringToObject(graph3, "expr", "3 / x");
+    cJSON_AddNumberToObject(graph3, "F", 3);
+    cJSON_AddNumberToObject(graph3, "start_x", -6.0);
+    cJSON_AddNumberToObject(graph3, "end_x", 6.0);
+    cJSON_AddNumberToObject(graph3, "num_points", 10000);
+    
+    cJSON *color3 = cJSON_CreateObject();
+    cJSON_AddNumberToObject(color3, "r", 0.0);
+    cJSON_AddNumberToObject(color3, "g", 0.6);
+    cJSON_AddNumberToObject(color3, "b", 1.0);
+    cJSON_AddItemToObject(graph3, "color", color3);
+    
+    cJSON_AddItemToArray(inputs, graph3);
+
+    // Параметры точности Eps1 и Eps2 в корень
+    cJSON_AddNumberToObject(root, "Eps1", 0.01);
+    cJSON_AddNumberToObject(root, "Eps2", 0.01);
+
+    // Перевод JSON в текст
+    char *json_string = cJSON_Print(root);
+    if (json_string == NULL)
+    {
+        cJSON_Delete(root);
+        return 0;
+    }
+
+    // Запись
+    FILE *file = fopen(filename, "w");
+    if (file == NULL) 
+    {
+        free(json_string);
+        cJSON_Delete(root);
+        return 0;
+    }
+
+    fprintf(file, "%s", json_string);
+    fclose(file);
+    free(json_string);
+    cJSON_Delete(root);
+
+    return 1;
 }
 
 /**
@@ -244,14 +351,13 @@ struct AppProperties parse_json(const char *filename_json)
         exit(6);
     }
 
-    // Проход по элементам массива "inputs"
     // Размер массива
     int array_size = cJSON_GetArraySize(inputs);
-
+    
     // Выходная структура
     struct AppProperties app_props;
     app_props.plots_props_array = (struct PlotProperties*)malloc(sizeof(struct PlotProperties) * array_size);
-
+    
     if (!app_props.plots_props_array)
     {
         fprintf(stderr, "Error: alloc memory in parse_json() for plots_props_array\n");
@@ -260,6 +366,16 @@ struct AppProperties parse_json(const char *filename_json)
     }
     app_props.size_prors_array = (size_t)array_size;
 
+    // Получение глобальных параметров Eps1 и Eps2
+    cJSON *eps1_item = cJSON_GetObjectItemCaseSensitive(root, "Eps1");
+    if (cJSON_IsNumber(eps1_item)) 
+        app_props.eps_1 = eps1_item->valuedouble;
+
+    cJSON *eps2_item = cJSON_GetObjectItemCaseSensitive(root, "Eps2");
+    if (cJSON_IsNumber(eps2_item)) 
+        app_props.eps_2 = eps2_item->valuedouble;
+    
+    // Проход по элементам json массива "inputs"
     for (int i = 0; i < array_size; ++i) 
     {
         cJSON *item = cJSON_GetArrayItem(inputs, i);
@@ -288,6 +404,10 @@ struct AppProperties parse_json(const char *filename_json)
             mbstowcs(wstr, expr->valuestring, wlen + 1);
             app_props.plots_props_array[i].expr = wstr;
         }
+
+        // Идентификатор функции F (F1, F2 итд)
+        cJSON *f = cJSON_GetObjectItemCaseSensitive(item, "F");
+        app_props.plots_props_array[i].F = cJSON_IsNumber(f) ? (int)f->valuedouble : 0;
 
         // Извлечь границы x
         cJSON *start_x = cJSON_GetObjectItemCaseSensitive(item, "start_x");
@@ -345,6 +465,7 @@ struct PlotDrawFun* make_properties(struct AppProperties *props)
     {
         pdf[i].title = props->plots_props_array[i].expr;
         pdf[i].color = props->plots_props_array[i].color;
+        pdf[i].fun_number = props->plots_props_array[i].F;
         // компилировать текстовые формулы в rpn один раз для последующих вычислений
         size_t rpn_cnt = compile_to_rpn(pdf[i].title, props->plots_props_array[i].rpn);
         props->plots_props_array[i].rpn_count = rpn_cnt;
