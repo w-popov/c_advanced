@@ -15,7 +15,10 @@ int main(void)
     props.pdf = make_properties(&props);   
     
     // Отрисовка и открытие файла графиков
-    draw_plots(props.pdf, props.size_prors_array, "plot.png");
+    draw_plots(&props, props.size_prors_array, "plot.png");
+
+    find_root(&props);  
+    draw_plots(&props, props.size_prors_array, "plot.png");
 
     // Освобождение памяти
     free_array_points(&props, props.size_prors_array);

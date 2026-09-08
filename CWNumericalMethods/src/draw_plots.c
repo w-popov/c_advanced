@@ -66,7 +66,10 @@ void free_array_points(struct AppProperties *ap, size_t size)
         }
         free(ap->plots_props_array);
         free(ap->pdf);
+        free(ap->inters_points);
     }
+    // Освобождение выделенной памяти библиотеки
+    FreeAllocations();  
 }
 
 /**
@@ -75,8 +78,9 @@ void free_array_points(struct AppProperties *ap, size_t size)
  * @param nums_draw_plots количество графиков на холсте
  * @param filename имя выходного png файла
  */
-void draw_plots(struct PlotDrawFun plots[], size_t nums_draw_plots, const char *filename)
+void draw_plots(struct AppProperties *ap, size_t nums_draw_plots, const char *filename)
 {
+    struct PlotDrawFun *plots = ap->pdf;
     if (nums_draw_plots == 0 || plots == NULL) 
     {
         perror("\nAn empty array was passed!\n");
@@ -152,6 +156,44 @@ void draw_plots(struct PlotDrawFun plots[], size_t nums_draw_plots, const char *
         wchar_t *sign = L"cource work 2 (C adv) Popov V.G";
         DrawText(imageReference->image, 600, 15., sign, wcslen(sign), CreateRGBColor(0, 0, 0));
 
+        // Отрисовка линий точек пересечения
+        double ladder_label = 20.;
+        for (size_t i = 0; i < ap->size_arr_inters_points; ++i)
+        {
+            if (!isnan(ap->inters_points[i].root))
+            {
+                ladder_label = i % 2 ? 20 : 0;
+                double math_x = ap->inters_points[i].root;
+                double pixel_x = MapXCoordinateBasedOnSettings(math_x, settings);
+                double pixel_y_bottom;
+                double pixel_y_top;
+
+                if (settings->autoBoundaries) 
+                {
+                    pixel_y_bottom = settings->height - 30.0;
+                    pixel_y_top = 30.0; 
+                } 
+                else 
+                {
+                    pixel_y_bottom = MapYCoordinateBasedOnSettings(0.0, settings);
+                    pixel_y_top    = MapYCoordinateBasedOnSettings(settings->yMax, settings);
+                }
+
+                RGBA *line_color = CreateRGBColor(0.1, 0.1, 0.1);
+                double thickness = 1.5;
+
+                DrawLine(imageReference->image, pixel_x, pixel_y_bottom, pixel_x, pixel_y_top, thickness, line_color);
+
+                RGBA *point_color = CreateRGBColor(1.0, 0.0, 0.0);
+                double radius = 3.0;
+                DrawCircle(imageReference->image, pixel_x, pixel_y_bottom, radius, point_color);
+
+                wchar_t root_buffer[32];
+                swprintf(root_buffer, 32, L"xF%d=%.4f", ap->inters_points[i].root_id, math_x);
+                DrawText(imageReference->image, pixel_x - 35.0, pixel_y_bottom + 25 + ladder_label, root_buffer, wcslen(root_buffer), line_color);
+            }
+        }
+
         // Запись в файл
         ByteArray *pngdata = ConvertToPNG(imageReference->image);
         const char* actual_filename = (filename == NULL) ? "plot.png" : filename;
@@ -170,10 +212,8 @@ void draw_plots(struct PlotDrawFun plots[], size_t nums_draw_plots, const char *
     {
         printf("\nError saving to file in draw_plots()\n");
     }
-
-    // Освобождение выделенной памяти библиотеки
+      
     free(series_array);
-    FreeAllocations();    
 }
 
 // ------------- JSON ----------------------------------------
@@ -285,6 +325,20 @@ int create_properties_json(const char *filename)
     cJSON_AddItemToObject(graph3, "color", color3);
     
     cJSON_AddItemToArray(inputs, graph3);
+
+    // Создание массива "intersection_points"
+    cJSON *intersections = cJSON_AddArrayToObject(root, "intersection_points");
+    if (intersections) 
+    {
+        for (int i = 1; i < 4; ++i) 
+        {
+            cJSON *item = cJSON_CreateObject();
+            cJSON_AddNumberToObject(item, "root", i);
+            cJSON_AddItemToObject(item, "xl", cJSON_CreateNull());
+            cJSON_AddItemToObject(item, "xr", cJSON_CreateNull());
+            cJSON_AddItemToArray(intersections, item);
+        }
+    }
 
     // Параметры точности Eps1 и Eps2 в корень
     cJSON_AddNumberToObject(root, "Eps1", 0.01);
@@ -438,6 +492,40 @@ struct AppProperties parse_json(const char *filename_json)
                 app_props.plots_props_array[i].color.r = r->valuedouble;
                 app_props.plots_props_array[i].color.g = g->valuedouble;
                 app_props.plots_props_array[i].color.b = b->valuedouble;
+            }
+        }
+    }
+
+    // Чтение массива "intersection_points"
+    cJSON *inter_array = cJSON_GetObjectItemCaseSensitive(root, "intersection_points");
+    if (cJSON_IsArray(inter_array)) 
+    {
+        app_props.size_arr_inters_points = (size_t)cJSON_GetArraySize(inter_array);
+        // ДИНАМИЧЕСКОЕ ВЫДЕЛЕНИЕ памяти под массив структур диапазонов Х поиска точек пересечения графиков
+        app_props.inters_points = (struct Intersection_points*)malloc(app_props.size_arr_inters_points * sizeof(struct Intersection_points));
+
+        for (size_t i = 0; i < app_props.size_arr_inters_points; ++i) 
+        {
+            cJSON *item = cJSON_GetArrayItem(inter_array, i);
+            struct Intersection_points *curr = &app_props.inters_points[i];
+
+            cJSON *root_id = cJSON_GetObjectItemCaseSensitive(item, "root_id");
+            curr->root_id = cJSON_IsNumber(root_id) ? (int)root_id->valuedouble : (int)(i + 1);
+            curr->root = NAN;
+            curr->xl = NAN;
+            curr->xr = NAN;
+
+            // Проверка на null для xl
+            cJSON *xl = cJSON_GetObjectItemCaseSensitive(item, "xl");
+            if (cJSON_IsNumber(xl)) 
+            {
+                curr->xl = xl->valuedouble;
+            } 
+            // Проверка на null для xr
+            cJSON *xr = cJSON_GetObjectItemCaseSensitive(item, "xr");
+            if (cJSON_IsNumber(xr)) 
+            {
+                curr->xr = xr->valuedouble;
             }
         }
     }

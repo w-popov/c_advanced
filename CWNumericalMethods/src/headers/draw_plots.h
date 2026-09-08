@@ -33,6 +33,18 @@ struct ArrayPointsXY
 };
 
 /**
+ * Данные о корне
+ */
+struct Intersection_points
+{
+    double xl;
+    double xr;
+    double root;
+    int root_id;
+    size_t nums_steps;
+};
+
+/**
  * График функции
  */
 struct PlotDrawFun
@@ -53,6 +65,7 @@ struct PlotProperties
     wchar_t *expr;
     double start_x;
     double end_x;
+    double intersection_point;
     size_t num_points;
     size_t rpn_count;
     struct ColorDraw color;
@@ -66,7 +79,9 @@ struct AppProperties
 {
     struct PlotDrawFun *pdf;
     struct PlotProperties *plots_props_array;
+    struct Intersection_points *inters_points;
     size_t size_prors_array;
+    size_t size_arr_inters_points;
     double eps_1;
     double eps_2;
 };
@@ -74,7 +89,7 @@ struct AppProperties
 /**
  * Создать график, сохранить в файл .png
  */
-void draw_plots(struct PlotDrawFun plots[], size_t nums_draw_plots, const char *filename);
+void draw_plots(struct AppProperties *ap, size_t nums_draw_plots, const char *filename);
 
 /**
  * Создать массив точек
