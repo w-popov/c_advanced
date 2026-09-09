@@ -12,6 +12,7 @@ extern "C" {
 
 struct AppProperties;
 struct PlotProperties;
+struct Intersection_points;
 
 /**
  * Функция вычислитель (указатель)
@@ -21,46 +22,24 @@ typedef double (*Func)(struct PlotProperties *, double);
 /**
  * Функция поиска пересечения графиков
  */
-typedef double (*IntersectionFunc)(struct AppProperties *, double, Func);
+typedef double (*IntersectionFunc)(struct Intersection_points *, double);
 
 /**
- * Ф-ция вычисления выражения math функций
+ * Ф-ция вычисления выражения math функций f(x)
  */
-double calculate(struct PlotProperties *pp, double x);
-
-// ------------- Функции F(x) = 0 для поиска точек пересечения ---------
+double calculate_f(struct PlotProperties *pp, double x);
 
 /**
- * @brief Пересечение F1 и F3 (F1 - F3)
- * @param ap структура данных приложения
- * @param x аргумент
- * @param f математическая функция
-*/ 
-double intersection_F_1_3(struct AppProperties *ap, double x, Func f);
-
-/**
- * @brief Пересечение F2 и F3 (F2 - F3)
- * @param ap структура данных приложения
- * @param x аргумент
- * @param f математическая функция
-*/ 
-double intersection_F_2_3(struct AppProperties *ap, double x, Func f);
-
-/**
- * @brief Пересечение F1 и F2 (F1 - F2)
- * @param ap структура данных приложения
- * @param x аргумент
- * @param f математическая функция
-*/ 
-double intersection_F_1_2(struct AppProperties *ap, double x, Func f); 
+ * Ф-ция вычисления выражения math функций F(x), т-е корней
+ */
+double calculate_F(struct Intersection_points *ip, double x);
 
 // -------------- МЕТОД ДЕЛЕНИЯ ОТРЕЗКА ПОПОЛАМ ------------------------------
 
 /**
  * @brief Найти корень
  */
-double find_root_div_method
-(struct AppProperties *ap, int root_id, IntersectionFunc F, Func f);
+double find_root_div_method (struct Intersection_points *ip, double eps, IntersectionFunc F);
 
 /**
  * @brief Метод деления отрезка пополам (поиск корня)

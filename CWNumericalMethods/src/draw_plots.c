@@ -58,17 +58,19 @@ void free_array_points(struct AppProperties *ap, size_t size)
     {
         for (size_t i = 0; i < size; ++i)
         {
-            if (ap->pdf[i].points.x)
-                free(ap->pdf[i].points.x);
-            if (ap->pdf[i].points.y)
-                free(ap->pdf[i].points.y);
+            free(ap->pdf[i].points.x);
+            free(ap->pdf[i].points.y);
             free(ap->plots_props_array[i].expr);
+        }
+        for (size_t i = 0; i < ap->size_arr_inters_points; ++i)
+        {
+            free(ap->inters_points[i].root_expr);
         }
         free(ap->plots_props_array);
         free(ap->pdf);
         free(ap->inters_points);
     }
-    // Освобождение выделенной памяти библиотеки
+    // Освобождение выделенной памяти библиотеки pbPlots
     FreeAllocations();  
 }
 
@@ -150,7 +152,7 @@ void draw_plots(struct AppProperties *ap, size_t nums_draw_plots, const char *fi
         {
             // Отрисовка текста заголовка цветом графика 
             RGBA *color_title = CreateRGBColor(plots[i].color.r, plots[i].color.g, plots[i].color.b);
-            swprintf(title_buffer, 128, L"F%d = %ls", plots[i].fun_number, plots[i].title);
+            swprintf(title_buffer, 128, L"f%d = %ls", plots[i].fun_number, plots[i].title);
             DrawText(imageReference->image, 180, heigt_title, title_buffer, wcslen(title_buffer), color_title);
         }
         wchar_t *sign = L"cource work 2 (C adv) Popov V.G";
@@ -189,7 +191,7 @@ void draw_plots(struct AppProperties *ap, size_t nums_draw_plots, const char *fi
                 DrawCircle(imageReference->image, pixel_x, pixel_y_bottom, radius, point_color);
 
                 wchar_t root_buffer[32];
-                swprintf(root_buffer, 32, L"xF%d=%.4f", ap->inters_points[i].root_id, math_x);
+                swprintf(root_buffer, 32, L"F%d=%.4f", ap->inters_points[i].id_F, math_x);
                 DrawText(imageReference->image, pixel_x - 35.0, pixel_y_bottom + 25 + ladder_label, root_buffer, wcslen(root_buffer), line_color);
             }
         }
@@ -281,7 +283,7 @@ int create_properties_json(const char *filename)
     // График F1
     cJSON *graph1 = cJSON_CreateObject();
     cJSON_AddStringToObject(graph1, "expr", "0.6 * x + 3");
-    cJSON_AddNumberToObject(graph1, "F", 1);
+    cJSON_AddNumberToObject(graph1, "f", 1);
     cJSON_AddNumberToObject(graph1, "start_x", -6.0);
     cJSON_AddNumberToObject(graph1, "end_x", 6.0);
     cJSON_AddNumberToObject(graph1, "num_points", 10000);
@@ -297,7 +299,7 @@ int create_properties_json(const char *filename)
     // График F2
     cJSON *graph2 = cJSON_CreateObject();
     cJSON_AddStringToObject(graph2, "expr", "(x - 2) ^ 3 - 1");
-    cJSON_AddNumberToObject(graph2, "F", 2);
+    cJSON_AddNumberToObject(graph2, "f", 2);
     cJSON_AddNumberToObject(graph2, "start_x", -6.0);
     cJSON_AddNumberToObject(graph2, "end_x", 6.0);
     cJSON_AddNumberToObject(graph2, "num_points", 10000);
@@ -313,7 +315,7 @@ int create_properties_json(const char *filename)
     // График F3
     cJSON *graph3 = cJSON_CreateObject();
     cJSON_AddStringToObject(graph3, "expr", "3 / x");
-    cJSON_AddNumberToObject(graph3, "F", 3);
+    cJSON_AddNumberToObject(graph3, "f", 3);
     cJSON_AddNumberToObject(graph3, "start_x", -6.0);
     cJSON_AddNumberToObject(graph3, "end_x", 6.0);
     cJSON_AddNumberToObject(graph3, "num_points", 10000);
@@ -326,19 +328,37 @@ int create_properties_json(const char *filename)
     
     cJSON_AddItemToArray(inputs, graph3);
 
-    // Создание массива "intersection_points"
-    cJSON *intersections = cJSON_AddArrayToObject(root, "intersection_points");
-    if (intersections) 
+    // Создание массива "roots"
+    cJSON *roots = cJSON_AddArrayToObject(root, "roots");
+    if (roots == NULL) 
     {
-        for (int i = 1; i < 4; ++i) 
-        {
-            cJSON *item = cJSON_CreateObject();
-            cJSON_AddNumberToObject(item, "root", i);
-            cJSON_AddItemToObject(item, "xl", cJSON_CreateNull());
-            cJSON_AddItemToObject(item, "xr", cJSON_CreateNull());
-            cJSON_AddItemToArray(intersections, item);
-        }
+        cJSON_Delete(root);
+        return 0;
     }
+
+    // Корень #1
+    cJSON *root1 = cJSON_CreateObject();
+    cJSON_AddStringToObject(root1, "root_expr", "0.6 * x + 3 - 3 / x");
+    cJSON_AddNumberToObject(root1, "F", 1);
+    cJSON_AddNumberToObject(root1, "a", 0.5);
+    cJSON_AddNumberToObject(root1, "b", 1.5);
+    cJSON_AddItemToArray(roots, root1);
+
+    // Корень #2
+    cJSON *root2 = cJSON_CreateObject();
+    cJSON_AddStringToObject(root2, "root_expr", "(x - 2) ^ 3 - 1 - 3 / x");
+    cJSON_AddNumberToObject(root2, "F", 2);
+    cJSON_AddNumberToObject(root2, "a", 3.0);
+    cJSON_AddNumberToObject(root2, "b", 4.0);
+    cJSON_AddItemToArray(roots, root2);
+
+    // Корень #3
+    cJSON *root3 = cJSON_CreateObject();
+    cJSON_AddStringToObject(root3, "root_expr", "0.6 * x + 3 - (x - 2) ^ 3 + 1");
+    cJSON_AddNumberToObject(root3, "F", 3);
+    cJSON_AddNumberToObject(root3, "a", 3.5);
+    cJSON_AddNumberToObject(root3, "b", 4.5);
+    cJSON_AddItemToArray(roots, root3);
 
     // Параметры точности Eps1 и Eps2 в корень
     cJSON_AddNumberToObject(root, "Eps1", 0.01);
@@ -459,9 +479,9 @@ struct AppProperties parse_json(const char *filename_json)
             app_props.plots_props_array[i].expr = wstr;
         }
 
-        // Идентификатор функции F (F1, F2 итд)
-        cJSON *f = cJSON_GetObjectItemCaseSensitive(item, "F");
-        app_props.plots_props_array[i].F = cJSON_IsNumber(f) ? (int)f->valuedouble : 0;
+        // Идентификатор функции f (f1, f2 итд)
+        cJSON *f = cJSON_GetObjectItemCaseSensitive(item, "f");
+        app_props.plots_props_array[i].f = cJSON_IsNumber(f) ? (int)f->valuedouble : 0;
 
         // Извлечь границы x
         cJSON *start_x = cJSON_GetObjectItemCaseSensitive(item, "start_x");
@@ -496,37 +516,55 @@ struct AppProperties parse_json(const char *filename_json)
         }
     }
 
-    // Чтение массива "intersection_points"
-    cJSON *inter_array = cJSON_GetObjectItemCaseSensitive(root, "intersection_points");
-    if (cJSON_IsArray(inter_array)) 
+    // Извлечь массив "roots"
+    cJSON *roots = cJSON_GetObjectItemCaseSensitive(root, "roots");
+    if (cJSON_IsArray(roots)) 
     {
-        app_props.size_arr_inters_points = (size_t)cJSON_GetArraySize(inter_array);
-        // ДИНАМИЧЕСКОЕ ВЫДЕЛЕНИЕ памяти под массив структур диапазонов Х поиска точек пересечения графиков
-        app_props.inters_points = (struct Intersection_points*)malloc(app_props.size_arr_inters_points * sizeof(struct Intersection_points));
-
-        for (size_t i = 0; i < app_props.size_arr_inters_points; ++i) 
+        int roots_size = cJSON_GetArraySize(roots);
+        app_props.inters_points = (struct Intersection_points*)malloc(sizeof(struct Intersection_points) * roots_size);
+        if (!app_props.inters_points)
         {
-            cJSON *item = cJSON_GetArrayItem(inter_array, i);
-            struct Intersection_points *curr = &app_props.inters_points[i];
+            fprintf(stderr, "Error: alloc memory for inters_points\n");
+            cJSON_Delete(root);
+            exit(8);
+        }
+        app_props.size_arr_inters_points = (size_t)roots_size;
 
-            cJSON *root_id = cJSON_GetObjectItemCaseSensitive(item, "root_id");
-            curr->root_id = cJSON_IsNumber(root_id) ? (int)root_id->valuedouble : (int)(i + 1);
-            curr->root = NAN;
-            curr->xl = NAN;
-            curr->xr = NAN;
+        for (int i = 0; i < roots_size; ++i) 
+        {
+            cJSON *item = cJSON_GetArrayItem(roots, i);
+            if (!item) continue;
 
-            // Проверка на null для xl
-            cJSON *xl = cJSON_GetObjectItemCaseSensitive(item, "xl");
-            if (cJSON_IsNumber(xl)) 
+            struct Intersection_points *curr_root = &app_props.inters_points[i];
+
+            curr_root->root = NAN;
+
+            // Конвертация "root_expr" char* -> wchar_t* (MALLOC)
+            cJSON *root_expr = cJSON_GetObjectItemCaseSensitive(item, "root_expr");
+            if (cJSON_IsString(root_expr) && root_expr->valuestring) 
             {
-                curr->xl = xl->valuedouble;
+                size_t wlen = mbstowcs(NULL, root_expr->valuestring, 0);
+                curr_root->root_expr = (wchar_t*)malloc((wlen + 1) * sizeof(wchar_t));
+                if (curr_root->root_expr)
+                {
+                    mbstowcs(curr_root->root_expr, root_expr->valuestring, wlen + 1);
+                }
             } 
-            // Проверка на null для xr
-            cJSON *xr = cJSON_GetObjectItemCaseSensitive(item, "xr");
-            if (cJSON_IsNumber(xr)) 
+            else 
             {
-                curr->xr = xr->valuedouble;
+                curr_root->root_expr = NULL;
             }
+
+            // Поле "F"
+            cJSON *F = cJSON_GetObjectItemCaseSensitive(item, "F");
+            curr_root->id_F = cJSON_IsNumber(F) ? (int)F->valuedouble : 0;
+
+            // Чтение интервалов поиска "a" и "b" (с проверкой на null/число)
+            cJSON *a_item = cJSON_GetObjectItemCaseSensitive(item, "a");
+            curr_root->a = cJSON_IsNumber(a_item) ? a_item->valuedouble : NAN;
+
+            cJSON *b_item = cJSON_GetObjectItemCaseSensitive(item, "b");
+            curr_root->b = cJSON_IsNumber(b_item) ? b_item->valuedouble : NAN;
         }
     }
     cJSON_Delete(root);
@@ -553,12 +591,12 @@ struct PlotDrawFun* make_properties(struct AppProperties *props)
     {
         pdf[i].title = props->plots_props_array[i].expr;
         pdf[i].color = props->plots_props_array[i].color;
-        pdf[i].fun_number = props->plots_props_array[i].F;
+        pdf[i].fun_number = props->plots_props_array[i].f;
         // компилировать текстовые формулы в rpn один раз для последующих вычислений
         size_t rpn_cnt = compile_to_rpn(pdf[i].title, props->plots_props_array[i].rpn);
         props->plots_props_array[i].rpn_count = rpn_cnt;
 
-        pdf[i].points = calculate_function(&(props->plots_props_array[i]), calculate);
+        pdf[i].points = calculate_function(&(props->plots_props_array[i]), calculate_f);
     }
 
     return pdf;

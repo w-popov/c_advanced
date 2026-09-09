@@ -4,94 +4,71 @@
 #include <stdio.h>
 
 /**
- * @brief Ф-ция вычисления выражения math функций
+ * @brief Ф-ция вычисления выражения math функций f(x)
  */
-double calculate(struct PlotProperties *pp, double x)
+double calculate_f(struct PlotProperties *pp, double x)
 {    
     return eval_rpn(pp->rpn, pp->rpn_count, x);
 }
 
+/**
+ * Ф-ция вычисления выражения math функций F(x), т-е корней
+ */
+double calculate_F(struct Intersection_points *ip, double x)
+{
+    return eval_rpn(ip->rpn, ip->rpn_count, x);
+}
+
 // ------------------------------------------------------------
-
-/**
- * @brief Пересечение F1 и F3 (F1 - F3)
- * @param ap структура данных приложения
- * @param x аргумент
- * @param f математическая функция
-*/ 
-double intersection_F_1_3(struct AppProperties *ap, double x, Func f)
-{
-    return f(&ap->plots_props_array[0], x) - f(&ap->plots_props_array[2], x);
-}
-
-/**
- * @brief Пересечение F2 и F3 (F2 - F3)
- * @param ap структура данных приложения
- * @param x аргумент
- * @param f математическая функция
-*/ 
-double intersection_F_2_3(struct AppProperties *ap, double x, Func f)
-{
-    return f(&ap->plots_props_array[1], x) - f(&ap->plots_props_array[2], x); 
-}
-
-/**
- * @brief Пересечение F1 и F2 (F1 - F2)
- * @param ap структура данных приложения
- * @param x аргумент
- * @param f математическая функция
-*/ 
-double intersection_F_1_2(struct AppProperties *ap, double x, Func f)
-{
-    return f(&ap->plots_props_array[0], x) - f(&ap->plots_props_array[1], x);
-}
-
 /**
  * @brief Найти корень
  */
-double find_root_div_method
-(struct AppProperties *ap, int index, IntersectionFunc F, Func f) 
+double find_root_div_method (struct Intersection_points *ip, double eps, IntersectionFunc F)
 {
-    int root_id = index - 1;
     double c;
     size_t step_count = 0; // Число шагов
-    double xl = ap->inters_points[root_id].xl;
-    double xr = ap->inters_points[root_id].xr;
+    double a = ip->a;
+    double b = ip->b;
 
-    if (F(ap, xl, f) * F(ap, xr, f) > 0) 
+    if (isnan(a) || isnan(b))
     {
-        wprintf(L"Ошибка: на интервале [%.2f, %.2f] нет корня.\n", xl, xr);
-        return (xl + xr) / 2.0; 
+        wprintf(L"Ошибка: интервалы a или b F%d = null\n", ip->id_F);
+    }
+    
+    if (F(ip, a) * F(ip, b) > 0) 
+    {
+        wprintf(L"Ошибка: на интервале [%.2f, %.2f] нет корня.\n", a, b);
+        return (a + b) / 2.0; 
     }
 
-    while ((xr - xl) / 2.0 > ap->eps_1) 
+    while ((b - a) / 2.0 > eps) 
     {
         step_count++;
-        c = (xl + xr) / 2.0;
+        c = (a + b) / 2.0;
         
         // Если корень найден
-        if (fabs(F(ap, c, f)) < 1e-15) 
+        if (fabs(F(ip, c)) < 1e-15) 
         {
-            ap->inters_points[root_id].nums_steps = step_count;
+            ip->nums_steps = step_count;
             wprintf(L"Корень найден точно за %zu шагов.\n", step_count);
             return c;
         }
         
         // Сужение интервала
-        if (F(ap, xl, f) * F(ap, c, f) < 0) 
+        if (F(ip, a) * F(ip, c) < 0) 
         {
-            xr = c;
+            b = c;
         } 
         else 
         {
-            xl = c;
+            a = c;
         }
     }
 
-    ap->inters_points[root_id].nums_steps = step_count;
-    wprintf(L"Корень найден с точностью %e за %zu шагов.\n", ap->eps_1, step_count);
+    ip->nums_steps = step_count;
+    wprintf(L"Корень найден с точностью %e за %zu шагов.\n", eps, step_count);
 
-    return (xl + xr) / 2.0;
+    return (a + b) / 2.0;
 
 }
 
@@ -105,19 +82,25 @@ int find_root(struct AppProperties *ap)
         perror("\nError in find_root()! NULL pointer *ap\n");
         return 0;
     }
-    if (ap->size_arr_inters_points != 3)
+
+    if (!ap->size_arr_inters_points)
     {
-        wprintf(L"\nОшибка! Кол-во диапазовнов поиска точек пересечения не равно 3!\nУкажите диапазоны xl, xr в файле properties.json, массив 'intersection_points'\n");
+        wprintf(L"\nОшибка: Массив 'roots' в properties.json ПУСТ.\n");
         return 0;
     }
-    double xF1 = find_root_div_method(ap, 1, intersection_F_1_3, calculate);
-    double xF2 = find_root_div_method(ap, 2, intersection_F_2_3, calculate);
-    double xF3 = find_root_div_method(ap, 3, intersection_F_1_2, calculate);
-    ap->inters_points[0].root = xF1;
-    ap->inters_points[1].root = xF2;
-    ap->inters_points[2].root = xF3;
 
-    wprintf(L"\nТочки пересечения: xF1 = %lf, xF2 = %lf, xF3 = %lf\n\n", xF1, xF2, xF3);
+    wprintf(L"\nТочки пересечения:\n");
+    for (size_t i = 0; i < ap->size_arr_inters_points; ++i)
+    {
+        /* Подготовка парсера для вычисления полей json "roots"[]->"root_expr",
+           компилировать текстовые формулы в rpn один раз для последующих вычислений */
+        size_t rpn_cnt = compile_to_rpn(ap->inters_points[i].root_expr, ap->inters_points[i].rpn);
+        ap->inters_points[i].rpn_count = rpn_cnt;
+        // Поиск корней
+        double root = find_root_div_method(&ap->inters_points[i], ap->eps_1, calculate_F);
+        ap->inters_points[i].root = root;
+        wprintf(L"xF%d = %lf\n", ap->inters_points[i].id_F, root);
+    }
     
     return 1;
 }

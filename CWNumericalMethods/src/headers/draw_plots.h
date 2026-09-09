@@ -37,11 +37,14 @@ struct ArrayPointsXY
  */
 struct Intersection_points
 {
-    double xl;
-    double xr;
+    double a;
+    double b;
     double root;
-    int root_id;
+    int id_F;
+    wchar_t *root_expr;
     size_t nums_steps;
+    size_t rpn_count;
+    struct Token rpn[MAX_TOKENS];
 };
 
 /**
@@ -61,7 +64,7 @@ struct PlotDrawFun
  */
 struct PlotProperties
 {
-    int F;
+    int f;
     wchar_t *expr;
     double start_x;
     double end_x;
