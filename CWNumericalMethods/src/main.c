@@ -17,8 +17,12 @@ int main(void)
     // Отрисовка и открытие файла графиков
     draw_plots(&props, props.size_prors_array, "plot.png");
 
-    find_root(&props);  
+    // Поиск корней
+    root(&props);  
     draw_plots(&props, props.size_prors_array, "plot.png");
+
+    // Вычислить интеграл методом трапеций
+    integral(&props);
 
     // Освобождение памяти
     free_array_points(&props, props.size_prors_array);

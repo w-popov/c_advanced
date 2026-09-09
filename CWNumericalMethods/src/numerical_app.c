@@ -23,7 +23,7 @@ double calculate_F(struct Intersection_points *ip, double x)
 /**
  * @brief Найти корень
  */
-double find_root_div_method (struct Intersection_points *ip, double eps, IntersectionFunc F)
+double find_root_div_method (struct Intersection_points *ip, double eps1, IntersectionFunc F)
 {
     double c;
     size_t step_count = 0; // Число шагов
@@ -41,7 +41,7 @@ double find_root_div_method (struct Intersection_points *ip, double eps, Interse
         return (a + b) / 2.0; 
     }
 
-    while ((b - a) / 2.0 > eps) 
+    while ((b - a) / 2.0 > eps1) 
     {
         step_count++;
         c = (a + b) / 2.0;
@@ -66,7 +66,7 @@ double find_root_div_method (struct Intersection_points *ip, double eps, Interse
     }
 
     ip->nums_steps = step_count;
-    wprintf(L"Корень найден с точностью %e за %zu шагов.\n", eps, step_count);
+    wprintf(L"Корень найден с точностью %e за %zu шагов.\n", eps1, step_count);
 
     return (a + b) / 2.0;
 
@@ -75,7 +75,7 @@ double find_root_div_method (struct Intersection_points *ip, double eps, Interse
 /**
  * @brief Метод деления отрезка пополам (поиск корня)
  */
-int find_root(struct AppProperties *ap)
+int root(struct AppProperties *ap)
 {
     if (ap == NULL)
     {
@@ -101,6 +101,84 @@ int find_root(struct AppProperties *ap)
         ap->inters_points[i].root = root;
         wprintf(L"xF%d = %lf\n", ap->inters_points[i].id_F, root);
     }
+    
+    return 1;
+}
+
+// --------------------------------- ИНТЕГРАЛ --------------------------------------------
+
+// Площадь на участке сверху f1, снизу f3
+double integrand_segment1(struct AppProperties *ap, double x)
+{
+    return calculate_F(&ap->inters_points[0], x);
+}
+
+// На участке сверху f1, снизу f2
+double integrand_segment2(struct AppProperties *ap, double x)
+{
+    return calculate_F(&ap->inters_points[2], x);
+}
+
+/**
+ * Вычисление интеграла методом трапеций с фиксированным числом разбиений n
+ */
+double integrate_trapezoid(struct AppProperties *ap, double eps2, double a, double b, IntegralFunc f)
+{
+    int n = 2;          // Старт с двух разбиений
+    double S_old = 0.0; // Предыдущее вычисление площади
+    double S_new = 0.0; // Новове вычисление площади
+
+    // Вычислять пока не будет достигнута точность eps2
+    while (1) 
+    {
+        double h = (b - a) / n;
+        double sum = (f(ap, a) + f(ap, b)) / 2.0;
+        
+        for (int i = 1; i < n; ++i) 
+        {
+            sum += f(ap, a + i * h);
+        }
+        S_new = sum * h;
+
+        if (n > 2 && fabs(S_new - S_old) < eps2) 
+        {
+            wprintf(L"Интеграл на отрезке [%.3f, %.3f] вычислен за n = %d разбиений.\n", a, b, n);
+            break; 
+        }
+
+        S_old = S_new;
+        n *= 2; // Удвоить количество полосок
+    }
+
+    return S_new;
+}
+
+
+/**
+ * Вычисление интеграла 
+ */
+int integral(struct AppProperties *ap)
+{
+    if (ap == NULL)
+    {
+        perror("\nError in integral()! NULL pointer *ap\n");
+        return 0;
+    }
+    // Хардкор. Если графиков не 3, то выход.
+    // Можно было бы сделать по аналогии с поиском корней, создав массив 
+    // данных в property.json
+    if (ap->size_arr_inters_points != 3)
+    {
+        wprintf(L"\nОшибка: заполните данные для 3 функций в property.json!\n");
+        return 0;
+    }
+    double S1 = integrate_trapezoid(ap, ap->eps_2, ap->inters_points[0].root, ap->inters_points[1].root, integrand_segment1);
+    double S2 = integrate_trapezoid(ap, ap->eps_2, ap->inters_points[1].root, ap->inters_points[2].root, integrand_segment2);
+    double total_S = S1 + S2;
+
+    wprintf(L"Площадь первого участка: %.6f\n", S1);
+    wprintf(L"Площадь второго участка: %.6f\n", S2);
+    wprintf(L"Итоговая площадь всей плоской фигуры: %.6f\n", total_S);
     
     return 1;
 }

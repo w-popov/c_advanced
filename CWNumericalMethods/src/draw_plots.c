@@ -191,7 +191,7 @@ void draw_plots(struct AppProperties *ap, size_t nums_draw_plots, const char *fi
                 DrawCircle(imageReference->image, pixel_x, pixel_y_bottom, radius, point_color);
 
                 wchar_t root_buffer[32];
-                swprintf(root_buffer, 32, L"F%d=%.4f", ap->inters_points[i].id_F, math_x);
+                swprintf(root_buffer, 32, L"xF%d=%.4f", ap->inters_points[i].id_F, math_x);
                 DrawText(imageReference->image, pixel_x - 35.0, pixel_y_bottom + 25 + ladder_label, root_buffer, wcslen(root_buffer), line_color);
             }
         }
