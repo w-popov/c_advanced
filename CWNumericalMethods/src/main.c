@@ -17,11 +17,11 @@ int main(void)
     // Отрисовка и открытие файла графиков
     draw_plots(&props, props.size_prors_array, "plot.png");
 
-    // Поиск корней
+    // Поиск корней метод деления отрезка пополам
     root(&props);  
     draw_plots(&props, props.size_prors_array, "plot.png");
 
-    // Вычислить интеграл методом трапеций
+    // Вычислить интеграл методом трапеций 
     integral(&props);
 
     // Освобождение памяти
