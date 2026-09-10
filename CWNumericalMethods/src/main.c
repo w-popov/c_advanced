@@ -95,12 +95,12 @@ int main(int argc, char *argv[])
     // Если передан флаг -r / -roots
     if (run_roots)
     {
-        wprintf(L"[INFO] Поиск корней уравнений (метод деление отрезка пополам)...\n");
+        wprintf(L"[INFO] Поиск корней уравнений (метод деления отрезка пополам)...\n");
         root(&props);  
         
         if (run_plots && !run_integral) 
         {
-            wprintf(L"[INFO] Обновление графика с учетом найденных корней...\n");
+            wprintf(L"[INFO] Обновление графиков с учетом найденных корней...\n");
             draw_plots(&props, props.size_prors_array, "plot.png");
         }
     }
@@ -109,11 +109,11 @@ int main(int argc, char *argv[])
     if (run_integral)
     {
         wprintf(L"[INFO] Вычисление интеграла площади (метод трапеций)...\n\n");
-        wprintf(L"[INFO] Поиск корней уравнений (метод деление отрезка пополам)...\n");
+        wprintf(L"[INFO] Поиск корней уравнений (метод деления отрезка пополам)...\n");
         root(&props);
         if (run_plots) 
         {
-            wprintf(L"[INFO] Обновление графика с учетом найденных корней...\n");
+            wprintf(L"[INFO] Обновление графиков с учетом найденных корней...\n");
             draw_plots(&props, props.size_prors_array, "plot.png");
         }
         integral(&props);
@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
         wprintf(L"[WARN] Предупреждение: Не выбрано ни одно действие. Используйте флаги -p, -r или -i.\n");
         show_help();
         #if defined(_WIN32) || defined(_WIN64)
-                printf("\nНажмите Enter для выхода...\n");
+                wprintf(L"\nНажмите Enter для выхода...\n");
                 system("pause");
         #endif
         return EXIT_SUCCESS;
