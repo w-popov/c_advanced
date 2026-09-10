@@ -35,12 +35,12 @@ typedef enum
     TOKEN_CONSTANT,          // Константы: pi, e
     TOKEN_NUMBER,            // Числа: 2, 3.14
     TOKEN_VARIABLE           // Переменные: x, y
-} TokenType;
+} TokenType_t;
 
 // Структура токена
 struct Token
 {
-    TokenType type;          // Тип токена
+    TokenType_t type;          // Тип токена
     char value[MAX_VAL_LEN]; // Строковое значение
     size_t start;            // Индекс начала токена в исходной строке
     size_t end;              // Индекс конца токена
