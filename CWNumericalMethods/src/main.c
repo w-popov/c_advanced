@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
             wprintf(L"[ERR] Ошибка: Неизвестный флаг. Используйте -help или -h для справки.\n");
             show_help();
         #if defined(_WIN32) || defined(_WIN64)
-            wrintf(L"\nНажмите Enter для выхода...\n");
+            wprintf(L"\nНажмите Enter для выхода...\n");
             system("pause");
         #endif
             return EXIT_FAILURE;
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
     {
         show_help();
         #if defined(_WIN32) || defined(_WIN64)
-                printf("\nНажмите Enter для выхода...\n");
+                wprintf(L"\nНажмите Enter для выхода...\n");
                 system("pause");
         #endif
         return EXIT_SUCCESS;
