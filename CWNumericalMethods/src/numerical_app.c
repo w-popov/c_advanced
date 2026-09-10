@@ -153,7 +153,6 @@ double integrate_trapezoid(struct AppProperties *ap, double eps2, double a, doub
     return S_new;
 }
 
-
 /**
  * Вычисление интеграла 
  */
@@ -166,12 +165,13 @@ int integral(struct AppProperties *ap)
     }
     // Хардкор. Если графиков не 3, то выход.
     // Можно было бы сделать по аналогии с поиском корней, создав массив 
-    // данных в property.json
+    // данных в property.json (сделал, но вышло слишком сложно -> оставлю как есть сейчас)
     if (ap->size_arr_inters_points != 3)
     {
         wprintf(L"\nОшибка: заполните данные для 3 функций в property.json!\n");
         return 0;
     }
+    
     double S1 = integrate_trapezoid(ap, ap->eps_2, ap->inters_points[0].root, ap->inters_points[1].root, integrand_segment1);
     double S2 = integrate_trapezoid(ap, ap->eps_2, ap->inters_points[1].root, ap->inters_points[2].root, integrand_segment2);
     double total_S = S1 + S2;
@@ -179,7 +179,40 @@ int integral(struct AppProperties *ap)
     wprintf(L"Площадь первого участка: %.6f\n", S1);
     wprintf(L"Площадь второго участка: %.6f\n", S2);
     wprintf(L"Итоговая площадь всей плоской фигуры: %.6f\n", total_S);
+    wprintf(L"Точность: %e\n", ap->eps_2);
     
     return 1;
 }
 
+// ==================== ПРИЛОЖЕНИЕ =========================================
+
+// Вызов справки
+void show_help(void) 
+{
+    wprintf(L"======================================================================\n");
+    wprintf(L"        Программа численного анализа графиков и уравнений (C11)       \n");
+    wprintf(L"======================================================================\n\n");
+    
+    wprintf(L"Использование:\n");
+    wprintf(L"  ./numerical [параметры]\n\n");
+    
+    wprintf(L"Параметры и ключи запуска:\n");
+    wprintf(L"  -h, --help       Показать данную справочную информацию.\n");
+    wprintf(L"  -p, --plots      Выполнить отрисовку графиков функций в файл 'plot.png'.\n");
+    wprintf(L"  -r, --roots      Найти корни уравнений (метод деления отрезка пополам).\n");
+    wprintf(L"  -i, --integral   Вычислить площади фигур (метод трапеций).\n\n");
+    
+    wprintf(L"Примеры запуска:\n");
+    wprintf(L"  ./numerical --help       (Вывод справки)\n");
+    wprintf(L"  ./numerical -p           (Только отрисовка графиков)\n");
+    wprintf(L"  ./numerical -r i         (Поиск корней и расчет интегралов)\n");
+    wprintf(L"  ./numerical --plots -r   (Расчет корней и вывод графиков)\n\n");
+    wprintf(L"  ./numerical -r -i -p     (Расчет корней, расчет интегралов и вывод графиков)\n\n");
+
+    
+    wprintf(L"Конфигурация приложения считывается автоматически из файла 'properties.json'.\n");
+    wprintf(L"Если файл 'properties.json' отсутствует, то он будет создан автоматически\
+ с дефолтными настройками.\n");
+
+    wprintf(L"======================================================================\n");
+}

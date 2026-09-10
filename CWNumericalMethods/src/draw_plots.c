@@ -361,8 +361,8 @@ int create_properties_json(const char *filename)
     cJSON_AddItemToArray(roots, root3);
 
     // Параметры точности Eps1 и Eps2 в корень
-    cJSON_AddNumberToObject(root, "Eps1", 0.01);
-    cJSON_AddNumberToObject(root, "Eps2", 0.01);
+    cJSON_AddNumberToObject(root, "Eps1", 0.00001);
+    cJSON_AddNumberToObject(root, "Eps2", 0.00001);
 
     // Перевод JSON в текст
     char *json_string = cJSON_Print(root);

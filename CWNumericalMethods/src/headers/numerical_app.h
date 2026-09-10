@@ -72,6 +72,8 @@ int integral(struct AppProperties *ap);
 
 // =========================== ПРИЛОЖЕНИЕ ===================================
 
+// Справка
+void show_help(void);
 
 
 #ifdef __cplusplus
