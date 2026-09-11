@@ -1,3 +1,9 @@
+#if defined(_WIN32) || defined(_WIN64)
+    #include <windows.h>
+    #include <getopt.h>
+#else
+    #include <unistd.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <locale.h>
@@ -7,12 +13,6 @@
 #include "draw_plots.h"
 #include "math_parser.h"
 
-#if defined(_WIN32) || defined(_WIN64)
-    #include <windows.h>
-    #include <getopt.h>
-#else
-    #include <unistd.h>
-#endif
 
 extern char *optarg;
 extern int optind, opterr, optopt;
