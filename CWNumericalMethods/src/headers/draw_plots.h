@@ -48,6 +48,18 @@ struct Intersection_points
 };
 
 /**
+ * Интеграл
+ */
+struct IntegralProperties
+{
+    wchar_t *expr_s; // Формула подинтегральной функции
+    int from_f;      // От этого корня
+    int to_f;        // До этого
+    size_t rpn_count; 
+    struct Token rpn[MAX_TOKENS];
+};
+
+/**
  * График функции
  */
 struct PlotDrawFun
@@ -83,11 +95,26 @@ struct AppProperties
     struct PlotDrawFun *pdf;
     struct PlotProperties *plots_props_array;
     struct Intersection_points *inters_points;
+    struct IntegralProperties *integral_props_array;
     size_t size_prors_array;
     size_t size_arr_inters_points;
+    size_t size_integral_array;
     double eps_1;
     double eps_2;
 };
+
+/**
+ * Тесты
+ */
+struct Tests_calc
+{
+    double a;
+    double b;
+    wchar_t *expr;
+    size_t rpn_count;
+    struct Token rpn[MAX_TOKENS];
+};
+
 
 /**
  * Создать график, сохранить в файл .png

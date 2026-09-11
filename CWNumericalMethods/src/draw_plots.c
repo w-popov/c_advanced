@@ -66,9 +66,14 @@ void free_array_points(struct AppProperties *ap, size_t size)
         {
             free(ap->inters_points[i].root_expr);
         }
+        for (size_t i = 0; i < ap->size_integral_array; ++i)
+        {
+            free(ap->integral_props_array[i].expr_s);
+        }
         free(ap->plots_props_array);
         free(ap->pdf);
         free(ap->inters_points);
+        free(ap->integral_props_array);
     }
     // Освобождение выделенной памяти библиотеки pbPlots
     FreeAllocations();  
@@ -360,6 +365,28 @@ int create_properties_json(const char *filename)
     cJSON_AddNumberToObject(root3, "b", 4.5);
     cJSON_AddItemToArray(roots, root3);
 
+    // Создание массива "integral" []
+    cJSON *integral = cJSON_AddArrayToObject(root, "integral");
+    if (integral == NULL)
+    {
+        cJSON_Delete(root);
+        return 0;
+    }
+
+    // Интеграл #1
+    cJSON *int1 = cJSON_CreateObject();
+    cJSON_AddStringToObject(int1, "expr_S", "0.6 * x + 3 - 3 / x");
+    cJSON_AddNumberToObject(int1, "from_F", 1);
+    cJSON_AddNumberToObject(int1, "to_F", 2);
+    cJSON_AddItemToArray(integral, int1);
+
+    // Интеграл #2
+    cJSON *int2 = cJSON_CreateObject();
+    cJSON_AddStringToObject(int2, "expr_S", "0.6 * x + 3 - (x - 2) ^ 3 + 1");
+    cJSON_AddNumberToObject(int2, "from_F", 2);
+    cJSON_AddNumberToObject(int2, "to_F", 3);
+    cJSON_AddItemToArray(integral, int2);
+
     // Параметры точности Eps1 и Eps2 в корень
     cJSON_AddNumberToObject(root, "Eps1", 0.00001);
     cJSON_AddNumberToObject(root, "Eps2", 0.00001);
@@ -567,6 +594,51 @@ struct AppProperties parse_json(const char *filename_json)
             curr_root->b = cJSON_IsNumber(b_item) ? b_item->valuedouble : NAN;
         }
     }
+
+    // Извлечь массив "integral"
+    cJSON *integral = cJSON_GetObjectItemCaseSensitive(root, "integral");
+    if (cJSON_IsArray(integral)) 
+    {
+        int integral_size = cJSON_GetArraySize(integral);
+        app_props.integral_props_array = (struct IntegralProperties*)malloc(sizeof(struct IntegralProperties) * integral_size);
+        if (!app_props.integral_props_array) {
+            fprintf(stderr, "Error: alloc memory for integral_props_array\n");
+            cJSON_Delete(root);
+            exit(9);
+        }
+        app_props.size_integral_array = (size_t)integral_size;
+
+        for (int i = 0; i < integral_size; ++i) 
+        {
+            cJSON *item = cJSON_GetArrayItem(integral, i);
+            if (!item) continue;
+            struct IntegralProperties *curr_int = &app_props.integral_props_array[i];
+
+            // Конвертация строки выражения "expr_S" char* -> wchar_t*
+            cJSON *expr_s = cJSON_GetObjectItemCaseSensitive(item, "expr_S");
+            if (cJSON_IsString(expr_s) && expr_s->valuestring) 
+            {
+                size_t wlen = mbstowcs(NULL, expr_s->valuestring, 0);
+                curr_int->expr_s = (wchar_t*)malloc((wlen + 1) * sizeof(wchar_t));
+                if (curr_int->expr_s)
+                {
+                    mbstowcs(curr_int->expr_s, expr_s->valuestring, wlen + 1);
+                }
+            } 
+            else 
+            {
+                curr_int->expr_s = NULL;
+            }
+
+            // Целочисленные ключи
+            cJSON *from_f = cJSON_GetObjectItemCaseSensitive(item, "from_F");
+            curr_int->from_f = cJSON_IsNumber(from_f) ? (int)from_f->valuedouble : 0;
+
+            cJSON *to_f = cJSON_GetObjectItemCaseSensitive(item, "to_F");
+            curr_int->to_f = cJSON_IsNumber(to_f) ? (int)to_f->valuedouble : 0;
+        }
+    }
+
     cJSON_Delete(root);
 
     return app_props;

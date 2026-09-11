@@ -28,6 +28,7 @@ int main(int argc, char *argv[])
     int run_roots = 0;
     int run_integral = 0;
     int show_help_flag = 0;
+    int run_tests = 0;
 
     // Описание соответствия длинных ключей коротким символам
     static struct option long_options[] = {
@@ -35,6 +36,7 @@ int main(int argc, char *argv[])
         {"plots",    no_argument, 0, 'p'},
         {"roots",    no_argument, 0, 'r'},
         {"integral", no_argument, 0, 'i'},
+        {"test",     no_argument, 0, 't'},
         {0, 0, 0, 0} 
     };
 
@@ -43,7 +45,7 @@ int main(int argc, char *argv[])
     opterr = 0;
 
     // Разбор длинных и коротких флагов
-    while ((key = getopt_long(argc, argv, "hpri", long_options, &option_index)) != -1)
+    while ((key = getopt_long(argc, argv, "thpri", long_options, &option_index)) != -1)
     {
         switch (key)
         {
@@ -58,6 +60,9 @@ int main(int argc, char *argv[])
             break;
         case 'i':
             run_integral = 1;
+            break;
+        case 't':
+            run_tests = 1;
             break;
         case '?':
         default:
@@ -83,7 +88,15 @@ int main(int argc, char *argv[])
 
     
     struct AppProperties props = parse_json("properties.json");
-    props.pdf = make_properties(&props);   
+    props.pdf = make_properties(&props); 
+    
+    // Если передан флаг -t / --test, запуск тестов
+    if (run_tests)
+    {
+        wprintf(L"[INFO] Запуск тестов...\n");
+        run_all_tests(&props);
+        return EXIT_SUCCESS;
+    }
     
     // Если передан флаг -p / -plots
     if (run_plots && !run_roots && !run_integral)
