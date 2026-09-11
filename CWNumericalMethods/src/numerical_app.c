@@ -336,18 +336,6 @@ void test_integral(struct AppProperties *ap)
  */
 void run_all_tests(struct AppProperties *ap)
 {
-    #if defined(_WIN32) || defined(_WIN64)
-    // Включение поддержки ANSI-последовательностей для Windows
-    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    if (hOut != INVALID_HANDLE_VALUE) {
-        DWORD dwMode = 0;
-        if (GetConsoleMode(hOut, &dwMode)) {
-            dwMode |= 0x0004; // ENABLE_VIRTUAL_TERMINAL_PROCESSING
-            SetConsoleMode(hOut, dwMode);
-        }
-    }
-    #endif
-
     wprintf(CBLUE L"\n================ Запуск тестов ================\n" CRESET);
     test_root(ap);
     test_integral(ap);

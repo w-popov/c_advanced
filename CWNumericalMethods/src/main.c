@@ -23,6 +23,18 @@ int main(int argc, char *argv[])
     setlocale(LC_ALL, "");
     setlocale(LC_NUMERIC, "C");
 
+    #if defined(_WIN32) || defined(_WIN64)
+        // Включение поддержки ANSI-последовательностей для цветной консоли в Windows
+        HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+        if (hOut != INVALID_HANDLE_VALUE) {
+            DWORD dwMode = 0;
+            if (GetConsoleMode(hOut, &dwMode)) {
+                dwMode |= 0x0004; // ENABLE_VIRTUAL_TERMINAL_PROCESSING
+                SetConsoleMode(hOut, dwMode);
+            }
+        }
+    #endif
+
     // Переменные-флаги для сохранения параметров командной строки
     int run_plots = 0;
     int run_roots = 0;
