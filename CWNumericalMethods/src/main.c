@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
         return EXIT_SUCCESS;
     }
 
-    // Освобождение динамической памяти
+    // Освобождение динамической памяти приложения
     free_array_points(&props, props.size_prors_array);
 
     return EXIT_SUCCESS;
