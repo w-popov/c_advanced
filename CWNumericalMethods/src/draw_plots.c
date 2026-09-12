@@ -10,9 +10,7 @@
 /**
  * @warning ВЫДЕЛЯЕТ ПАМЯТЬ
  * @brief Создать массив точек графика
- * @param start_x начать с этого значения
- * @param end_x до этого
- * @param num_points количесво точек
+ * @param pp структура (указатель) с данными для отрисовки
  * @param function вычислитель 
  */
 struct ArrayPointsXY calculate_function(struct PlotProperties *pp, Func function)
@@ -50,7 +48,7 @@ struct ArrayPointsXY calculate_function(struct PlotProperties *pp, Func function
 }
 
 /**
- * Очистить память
+ * Очистить динамическую память приложения
  */
 void free_array_points(struct AppProperties *ap, size_t size)
 {
@@ -81,7 +79,7 @@ void free_array_points(struct AppProperties *ap, size_t size)
 
 /**
  * @brief Создать график, сохранить в файл .png
- * @param PlotDrawFun массив структур графиков для отрисовки
+ * @param ap главная структура (указатель) приложения
  * @param nums_draw_plots количество графиков на холсте
  * @param filename имя выходного png файла
  */
