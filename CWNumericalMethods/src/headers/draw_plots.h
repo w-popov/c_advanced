@@ -9,7 +9,7 @@ extern "C" {
 #include "numerical_app.h"
 #include "math_parser.h"
 
-// Количество графиков
+// Количество графиков (DEBUG)
 #define NUMS_PLOTS      3
 
 /**
@@ -27,9 +27,9 @@ struct ColorDraw
  */
 struct ArrayPointsXY
 {
-    size_t num_points;
-    double *x;
-    double *y;
+    size_t num_points;  // кол-во точек
+    double *x;          // массив для Х
+    double *y;          // массив для Y
 };
 
 /**
@@ -37,12 +37,12 @@ struct ArrayPointsXY
  */
 struct Intersection_points
 {
-    double a;
-    double b;
-    double root;
-    int id_F;
-    wchar_t *root_expr;
-    size_t nums_steps;
+    double a;                       // начало отрезка
+    double b;                       // конец отрезка
+    double root;                    // вычисленный корень
+    int id_F;                       // id
+    wchar_t *root_expr;             // выражение для вычисления
+    size_t nums_steps;              // кол-во шагов
     size_t rpn_count;
     struct Token rpn[MAX_TOKENS];
 };
@@ -88,19 +88,19 @@ struct PlotProperties
 };
 
 /**
- * Настройки
+ * Настройки. Главная структура приложения
  */
 struct AppProperties
 {
-    struct PlotDrawFun *pdf;
-    struct PlotProperties *plots_props_array;
-    struct Intersection_points *inters_points;
-    struct IntegralProperties *integral_props_array;
-    size_t size_prors_array;
+    struct PlotDrawFun *pdf;                            // 1. массивы для отрисовки графиков
+    struct PlotProperties *plots_props_array;           // 2.
+    struct Intersection_points *inters_points;          // массив корней
+    struct IntegralProperties *integral_props_array;    // массив интеграла
+    size_t size_prors_array;                            // размеры массивов (т-к malloc)
     size_t size_arr_inters_points;
     size_t size_integral_array;
-    double eps_1;
-    double eps_2;
+    double eps_1;                                       // точность для корней
+    double eps_2;                                       // точность для интеграла
 };
 
 /**
