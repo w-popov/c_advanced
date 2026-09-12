@@ -24,6 +24,8 @@ int main(int argc, char *argv[])
     setlocale(LC_NUMERIC, "C");
 
     #if defined(_WIN32) || defined(_WIN64)
+        SetConsoleCP(65001);
+        SetConsoleOutputCP(65001);
         // Включение поддержки ANSI-последовательностей для цветной консоли в Windows
         HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
         if (hOut != INVALID_HANDLE_VALUE) {
