@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
         return EXIT_SUCCESS;
     }
 
-    // Освобождение динамической памяти (передаем указатель и размер считанного массива)
+    // Освобождение динамической памяти
     free_array_points(&props, props.size_prors_array);
 
     return EXIT_SUCCESS;

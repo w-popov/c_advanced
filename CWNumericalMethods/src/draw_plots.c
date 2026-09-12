@@ -167,6 +167,7 @@ void draw_plots(struct AppProperties *ap, size_t nums_draw_plots, const char *fi
         double ladder_label = 20.;
         for (size_t i = 0; i < ap->size_arr_inters_points; ++i)
         {
+            // Если корни вычислены то показать линиями точки пересечения
             if (!isnan(ap->inters_points[i].root))
             {
                 ladder_label = i % 2 ? 20 : 0;
