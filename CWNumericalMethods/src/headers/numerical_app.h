@@ -69,7 +69,7 @@ int root(struct AppProperties *ap);
 // ------------------------- ИНТЕГРАЛ ----------------------------------------
 
 /**
- * Вычисление интеграла методом трапеций с фиксированным числом разбиений n
+ * Вычисление интеграла методом трапеций
  */
 double integrate_trapezoid
 (struct AppProperties *ap, struct IntegralProperties *ip, double a, double b, IntegralFunc f);
