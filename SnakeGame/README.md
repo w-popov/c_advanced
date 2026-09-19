@@ -8,3 +8,8 @@ cd c_advanced/
 git sparse-checkout set SnakeGame
 git checkout
 cd SnakeGame/
+```
+## Игра змейка
+Игра змейка многопоточная версия. Графический интерфейс: библиотека ncurces/PDCurses.
+
+<img width="1510" height="872" alt="zipgameplay" src="https://github.com/user-attachments/assets/3091c308-b421-445e-ac5f-fc66a78dbdec" />
