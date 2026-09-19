@@ -16,7 +16,8 @@
 extern char *optarg;
 extern int optind, opterr, optopt;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   setlocale(LC_ALL, "");
   setlocale(LC_NUMERIC, "C");
 
@@ -25,9 +26,11 @@ int main(int argc, char *argv[]) {
   SetConsoleOutputCP(65001);
   // Включение поддержки ANSI-последовательностей для цветной консоли в Windows
   HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-  if (hOut != INVALID_HANDLE_VALUE) {
+  if (hOut != INVALID_HANDLE_VALUE) 
+  {
     DWORD dwMode = 0;
-    if (GetConsoleMode(hOut, &dwMode)) {
+    if (GetConsoleMode(hOut, &dwMode)) 
+    {
       dwMode |= 0x0004; // ENABLE_VIRTUAL_TERMINAL_PROCESSING
       SetConsoleMode(hOut, dwMode);
     }
@@ -52,38 +55,40 @@ int main(int argc, char *argv[]) {
   opterr = 0;
 
   // Разбор длинных и коротких флагов
-  while ((key = getopt_long(argc, argv, "thpri", long_options,
-                            &option_index)) != -1) {
-    switch (key) {
-    case 'h':
-      show_help_flag = 1;
-      break;
-    case 'p':
-      run_plots = 1;
-      break;
-    case 'r':
-      run_roots = 1;
-      break;
-    case 'i':
-      run_integral = 1;
-      break;
-    case 't':
-      run_tests = 1;
-      break;
-    case '?':
-    default:
-      wprintf(L"[ERR] Ошибка: Неизвестный флаг. Используйте -help или -h для "
-              L"справки.\n");
-      show_help();
-#if defined(_WIN32) || defined(_WIN64)
-      wprintf(L"\nНажмите Enter для выхода...\n");
-      system("pause");
-#endif
-      return EXIT_FAILURE;
+  while ((key = getopt_long(argc, argv, "thpri", long_options, &option_index)) != -1) 
+  {
+    switch (key) 
+    {
+      case 'h':
+        show_help_flag = 1;
+        break;
+      case 'p':
+        run_plots = 1;
+        break;
+      case 'r':
+        run_roots = 1;
+        break;
+      case 'i':
+        run_integral = 1;
+        break;
+      case 't':
+        run_tests = 1;
+        break;
+      case '?':
+      default:
+        wprintf(L"[ERR] Ошибка: Неизвестный флаг. Используйте -help или -h для "
+                L"справки.\n");
+        show_help();
+        #if defined(_WIN32) || defined(_WIN64)
+          wprintf(L"\nНажмите Enter для выхода...\n");
+          system("pause");
+        #endif
+        return EXIT_FAILURE;
     }
   }
 
-  if (argc == 1 || optind == 1 || show_help_flag) {
+  if (argc == 1 || optind == 1 || show_help_flag) 
+  {
     show_help();
 #if defined(_WIN32) || defined(_WIN64)
     wprintf(L"\nНажмите Enter для выхода...\n");
@@ -96,37 +101,41 @@ int main(int argc, char *argv[]) {
   props.pdf = make_properties(&props);
 
   // Если передан флаг -t / --test, запуск тестов
-  if (run_tests) {
+  if (run_tests) 
+  {
     wprintf(L"[INFO] Запуск тестов...\n");
     run_all_tests(&props);
     return EXIT_SUCCESS;
   }
 
   // Если передан флаг -p / -plots
-  if (run_plots && !run_roots && !run_integral) {
+  if (run_plots && !run_roots && !run_integral) 
+  {
     wprintf(L"[INFO] Отрисовка графиков функций...\n");
     draw_plots(&props, props.size_prors_array, "plot.png");
   }
 
   // Если передан флаг -r / -roots
-  if (run_roots) {
-    wprintf(
-        L"[INFO] Поиск корней уравнений (метод деления отрезка пополам)...\n");
+  if (run_roots) 
+  {
+    wprintf(L"[INFO] Поиск корней уравнений (метод деления отрезка пополам)...\n");
     root(&props);
 
-    if (run_plots && !run_integral) {
+    if (run_plots && !run_integral) 
+    {
       wprintf(L"[INFO] Обновление графиков с учетом найденных корней...\n");
       draw_plots(&props, props.size_prors_array, "plot.png");
     }
   }
 
   // Если передан флаг -i / -integral
-  if (run_integral) {
+  if (run_integral) 
+  {
     wprintf(L"[INFO] Вычисление интеграла площади (метод трапеций)...\n\n");
-    wprintf(
-        L"[INFO] Поиск корней уравнений (метод деления отрезка пополам)...\n");
+    wprintf(L"[INFO] Поиск корней уравнений (метод деления отрезка пополам)...\n");
     root(&props);
-    if (run_plots) {
+    if (run_plots)
+    {
       wprintf(L"[INFO] Обновление графиков с учетом найденных корней...\n");
       draw_plots(&props, props.size_prors_array, "plot.png");
     }
@@ -134,7 +143,8 @@ int main(int argc, char *argv[]) {
   }
 
   // Если аргументы не валидны
-  if (!run_plots && !run_roots && !run_integral) {
+  if (!run_plots && !run_roots && !run_integral) 
+  {
     wprintf(L"[WARN] Предупреждение: Не выбрано ни одно действие. Используйте "
             L"флаги -p, -r или -i.\n");
     show_help();

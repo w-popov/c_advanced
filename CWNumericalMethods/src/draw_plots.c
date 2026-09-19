@@ -402,9 +402,11 @@ int create_properties_json(const char *filename) {
  * @brief Парсинг JSON
  * @warning ВЫДЕЛЯЕТ ПАМЯТЬ!
  */
-struct AppProperties parse_json(const char *filename_json) {
+struct AppProperties parse_json(const char *filename_json) 
+{
   char *json_data = read_JSON_file_to_string(filename_json);
-  if (!json_data) {
+  if (!json_data) 
+  {
     fprintf(stderr, "Failed to open file: %s\n", filename_json);
     exit(4);
   }
@@ -413,7 +415,8 @@ struct AppProperties parse_json(const char *filename_json) {
   cJSON *root = cJSON_Parse(json_data);
   free(json_data);
 
-  if (!root) {
+  if (!root) 
+  {
     const char *error_ptr = cJSON_GetErrorPtr();
     fprintf(stderr, "JSON parsing error");
     if (error_ptr)
@@ -424,7 +427,8 @@ struct AppProperties parse_json(const char *filename_json) {
 
   // Получение массива "inputs"
   cJSON *inputs = cJSON_GetObjectItemCaseSensitive(root, "inputs");
-  if (!cJSON_IsArray(inputs)) {
+  if (!cJSON_IsArray(inputs)) 
+  {
     fprintf(stderr, "Error: 'inputs' not found or is not an array\n");
     cJSON_Delete(root);
     exit(6);
@@ -435,12 +439,11 @@ struct AppProperties parse_json(const char *filename_json) {
 
   // Выходная структура
   struct AppProperties app_props;
-  app_props.plots_props_array = (struct PlotProperties *)malloc(
-      sizeof(struct PlotProperties) * array_size);
+  app_props.plots_props_array = (struct PlotProperties *)malloc(sizeof(struct PlotProperties) * array_size);
 
-  if (!app_props.plots_props_array) {
-    fprintf(stderr,
-            "Error: alloc memory in parse_json() for plots_props_array\n");
+  if (!app_props.plots_props_array) 
+  {
+    fprintf(stderr, "Error: alloc memory in parse_json() for plots_props_array\n");
     cJSON_Delete(root);
     exit(7);
   }
@@ -465,15 +468,18 @@ struct AppProperties parse_json(const char *filename_json) {
     // Извлечь поле "expr" - выражение для вычисления
     // Преобразование из char* в wchar_t*
     cJSON *expr = cJSON_GetObjectItemCaseSensitive(item, "expr");
-    if (cJSON_IsString(expr) && expr->valuestring) {
+    if (cJSON_IsString(expr) && expr->valuestring) 
+    {
       // сколько места нужно для широкой строки
       size_t wlen = mbstowcs(NULL, expr->valuestring, 0);
-      if (wlen == (size_t)-1) {
+      if (wlen == (size_t)-1) 
+      {
         fprintf(stderr, "Error: Failed to estimate wide string length\n");
         exit(EXIT_FAILURE);
       }
       wchar_t *wstr = (wchar_t *)malloc((wlen + 1) * sizeof(wchar_t));
-      if (!wstr) {
+      if (!wstr) 
+      {
         fprintf(stderr, "Error: Memory allocation failed for wide string\n");
         exit(EXIT_FAILURE);
       }
@@ -489,26 +495,29 @@ struct AppProperties parse_json(const char *filename_json) {
     // Извлечь границы x
     cJSON *start_x = cJSON_GetObjectItemCaseSensitive(item, "start_x");
     cJSON *end_x = cJSON_GetObjectItemCaseSensitive(item, "end_x");
-    if (cJSON_IsNumber(start_x) && cJSON_IsNumber(end_x)) {
+    if (cJSON_IsNumber(start_x) && cJSON_IsNumber(end_x)) 
+    {
       app_props.plots_props_array[i].start_x = start_x->valuedouble;
       app_props.plots_props_array[i].end_x = end_x->valuedouble;
     }
 
     // Извлечь количество точек
     cJSON *num_points = cJSON_GetObjectItemCaseSensitive(item, "num_points");
-    if (cJSON_IsNumber(num_points)) {
-      app_props.plots_props_array[i].num_points =
-          (size_t)num_points->valuedouble;
+    if (cJSON_IsNumber(num_points)) 
+    {
+      app_props.plots_props_array[i].num_points = (size_t)num_points->valuedouble;
     }
 
     // Извлечь вложенный объект цвета
     cJSON *color = cJSON_GetObjectItemCaseSensitive(item, "color");
-    if (cJSON_IsObject(color)) {
+    if (cJSON_IsObject(color)) 
+    {
       cJSON *r = cJSON_GetObjectItemCaseSensitive(color, "r");
       cJSON *g = cJSON_GetObjectItemCaseSensitive(color, "g");
       cJSON *b = cJSON_GetObjectItemCaseSensitive(color, "b");
 
-      if (cJSON_IsNumber(r) && cJSON_IsNumber(g) && cJSON_IsNumber(b)) {
+      if (cJSON_IsNumber(r) && cJSON_IsNumber(g) && cJSON_IsNumber(b)) 
+      {
         app_props.plots_props_array[i].color.r = r->valuedouble;
         app_props.plots_props_array[i].color.g = g->valuedouble;
         app_props.plots_props_array[i].color.b = b->valuedouble;
@@ -518,18 +527,20 @@ struct AppProperties parse_json(const char *filename_json) {
 
   // Извлечь массив "roots"
   cJSON *roots = cJSON_GetObjectItemCaseSensitive(root, "roots");
-  if (cJSON_IsArray(roots)) {
+  if (cJSON_IsArray(roots)) 
+  {
     int roots_size = cJSON_GetArraySize(roots);
-    app_props.inters_points = (struct Intersection_points *)malloc(
-        sizeof(struct Intersection_points) * roots_size);
-    if (!app_props.inters_points) {
+    app_props.inters_points = (struct Intersection_points *)malloc(sizeof(struct Intersection_points) * roots_size);
+    if (!app_props.inters_points) 
+    {
       fprintf(stderr, "Error: alloc memory for inters_points\n");
       cJSON_Delete(root);
       exit(8);
     }
     app_props.size_arr_inters_points = (size_t)roots_size;
 
-    for (int i = 0; i < roots_size; ++i) {
+    for (int i = 0; i < roots_size; ++i) 
+    {
       cJSON *item = cJSON_GetArrayItem(roots, i);
       if (!item)
         continue;
@@ -540,13 +551,16 @@ struct AppProperties parse_json(const char *filename_json) {
 
       // Конвертация "root_expr" char* -> wchar_t* (MALLOC)
       cJSON *root_expr = cJSON_GetObjectItemCaseSensitive(item, "root_expr");
-      if (cJSON_IsString(root_expr) && root_expr->valuestring) {
+      if (cJSON_IsString(root_expr) && root_expr->valuestring) 
+      {
         size_t wlen = mbstowcs(NULL, root_expr->valuestring, 0);
         curr_root->root_expr = (wchar_t *)malloc((wlen + 1) * sizeof(wchar_t));
         if (curr_root->root_expr) {
           mbstowcs(curr_root->root_expr, root_expr->valuestring, wlen + 1);
         }
-      } else {
+      } 
+      else 
+      {
         curr_root->root_expr = NULL;
       }
 
@@ -565,18 +579,20 @@ struct AppProperties parse_json(const char *filename_json) {
 
   // Извлечь массив "integral"
   cJSON *integral = cJSON_GetObjectItemCaseSensitive(root, "integral");
-  if (cJSON_IsArray(integral)) {
+  if (cJSON_IsArray(integral)) 
+  {
     int integral_size = cJSON_GetArraySize(integral);
-    app_props.integral_props_array = (struct IntegralProperties *)malloc(
-        sizeof(struct IntegralProperties) * integral_size);
-    if (!app_props.integral_props_array) {
+    app_props.integral_props_array = (struct IntegralProperties *)malloc(sizeof(struct IntegralProperties) * integral_size);
+    if (!app_props.integral_props_array) 
+    {
       fprintf(stderr, "Error: alloc memory for integral_props_array\n");
       cJSON_Delete(root);
       exit(9);
     }
     app_props.size_integral_array = (size_t)integral_size;
 
-    for (int i = 0; i < integral_size; ++i) {
+    for (int i = 0; i < integral_size; ++i) 
+    {
       cJSON *item = cJSON_GetArrayItem(integral, i);
       if (!item)
         continue;
@@ -584,13 +600,17 @@ struct AppProperties parse_json(const char *filename_json) {
 
       // Конвертация строки выражения "expr_S" char* -> wchar_t*
       cJSON *expr_s = cJSON_GetObjectItemCaseSensitive(item, "expr_S");
-      if (cJSON_IsString(expr_s) && expr_s->valuestring) {
+      if (cJSON_IsString(expr_s) && expr_s->valuestring) 
+      {
         size_t wlen = mbstowcs(NULL, expr_s->valuestring, 0);
         curr_int->expr_s = (wchar_t *)malloc((wlen + 1) * sizeof(wchar_t));
-        if (curr_int->expr_s) {
+        if (curr_int->expr_s)
+        {
           mbstowcs(curr_int->expr_s, expr_s->valuestring, wlen + 1);
         }
-      } else {
+      } 
+      else 
+      {
         curr_int->expr_s = NULL;
       }
 
@@ -613,25 +633,25 @@ struct AppProperties parse_json(const char *filename_json) {
  * @warning ВЫДЕЛЯЕТ ПАМЯТЬ!
  * @param props Структура (указатель) из распарсенного json файла настроек
  */
-struct PlotDrawFun *make_properties(struct AppProperties *props) {
-  if (props == NULL) {
+struct PlotDrawFun *make_properties(struct AppProperties *props) 
+{
+  if (props == NULL)
+  {
     fprintf(stderr, "Error: Zero NULL pointer in make_properties()\n");
     exit(7);
   }
 
-  struct PlotDrawFun *pdf = (struct PlotDrawFun *)malloc(
-      sizeof(struct PlotDrawFun) * props->size_prors_array);
-  for (size_t i = 0; i < props->size_prors_array; ++i) {
+  struct PlotDrawFun *pdf = (struct PlotDrawFun *)malloc(sizeof(struct PlotDrawFun) * props->size_prors_array);
+  for (size_t i = 0; i < props->size_prors_array; ++i) 
+  {
     pdf[i].title = props->plots_props_array[i].expr;
     pdf[i].color = props->plots_props_array[i].color;
     pdf[i].fun_number = props->plots_props_array[i].f;
     // компилировать текстовые формулы в rpn один раз для последующих вычислений
-    size_t rpn_cnt =
-        compile_to_rpn(pdf[i].title, props->plots_props_array[i].rpn);
+    size_t rpn_cnt = compile_to_rpn(pdf[i].title, props->plots_props_array[i].rpn);
     props->plots_props_array[i].rpn_count = rpn_cnt;
 
-    pdf[i].points =
-        calculate_function(&(props->plots_props_array[i]), calculate_f);
+    pdf[i].points = calculate_function(&(props->plots_props_array[i]), calculate_f);
   }
 
   return pdf;

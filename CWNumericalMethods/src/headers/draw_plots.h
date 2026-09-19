@@ -15,7 +15,8 @@ extern "C" {
 /**
  * Цвет RGB
  */
-struct ColorDraw {
+struct ColorDraw 
+{
   double r;
   double g;
   double b;
@@ -24,7 +25,8 @@ struct ColorDraw {
 /**
  * Массив точек графика
  */
-struct ArrayPointsXY {
+struct ArrayPointsXY 
+{
   size_t num_points; // кол-во точек
   double *x;         // массив для Х
   double *y;         // массив для Y
@@ -33,7 +35,8 @@ struct ArrayPointsXY {
 /**
  * Данные о корне
  */
-struct Intersection_points {
+struct Intersection_points 
+{
   double a;           // начало отрезка
   double b;           // конец отрезка
   double root;        // вычисленный корень
@@ -47,7 +50,8 @@ struct Intersection_points {
 /**
  * Интеграл
  */
-struct IntegralProperties {
+struct IntegralProperties 
+{
   wchar_t *expr_s; // Формула подинтегральной функции
   int from_f;      // От этого корня
   int to_f;        // До этого
@@ -58,7 +62,8 @@ struct IntegralProperties {
 /**
  * График функции
  */
-struct PlotDrawFun {
+struct PlotDrawFun 
+{
   struct ArrayPointsXY points;
   struct ColorDraw color;
   wchar_t *title;
@@ -69,7 +74,8 @@ struct PlotDrawFun {
  * Настройки в JSON файле
  * (Для вычислений)
  */
-struct PlotProperties {
+struct PlotProperties 
+{
   int f;
   wchar_t *expr;
   double start_x;
@@ -84,7 +90,8 @@ struct PlotProperties {
 /**
  * Настройки. Главная структура приложения
  */
-struct AppProperties {
+struct AppProperties 
+{
   struct PlotDrawFun *pdf; // 1. массивы для отрисовки графиков
   struct PlotProperties *plots_props_array;        // 2.
   struct Intersection_points *inters_points;       // массив корней
@@ -99,7 +106,8 @@ struct AppProperties {
 /**
  * Тесты
  */
-struct Tests_calc {
+struct Tests_calc 
+{
   double a;
   double b;
   wchar_t *expr;
@@ -110,14 +118,12 @@ struct Tests_calc {
 /**
  * Создать график, сохранить в файл .png
  */
-void draw_plots(struct AppProperties *ap, size_t nums_draw_plots,
-                const char *filename);
+void draw_plots(struct AppProperties *ap, size_t nums_draw_plots, const char *filename);
 
 /**
  * Создать массив точек
  */
-struct ArrayPointsXY calculate_function(struct PlotProperties *pp,
-                                        Func function);
+struct ArrayPointsXY calculate_function(struct PlotProperties *pp, Func function);
 
 /**
  * Очистить память
