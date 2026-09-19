@@ -14,6 +14,6 @@ git sparse-checkout set CWNumericalMethods
 git checkout
 cd CWNumericalMethods/
 
-<img width="1127" height="750" alt="key_i" src="https://github.com/user-attachments/assets/3d1a3462-af8e-4c7a-a88f-3e8e40514f76" />
+<img width="1127" height="750" alt="key_i" src="https://github.com/user-attachments/assets/09047694-e2c1-4731-9009-25dca2b14ebf" />
 
-<img width="1918" height="1021" alt="more_plots" src="https://github.com/user-attachments/assets/5f6e78f8-fe10-4593-b766-9bdf46ff6851" />
+<img width="1918" height="1021" alt="more_plots" src="https://github.com/user-attachments/assets/0182605c-9114-4223-819d-3fa51d441bb3" />
