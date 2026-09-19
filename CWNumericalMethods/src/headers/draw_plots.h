@@ -5,136 +5,129 @@
 extern "C" {
 #endif
 
-#include <wchar.h>
-#include "numerical_app.h"
 #include "math_parser.h"
+#include "numerical_app.h"
+#include <wchar.h>
 
 // Количество графиков (DEBUG)
-#define NUMS_PLOTS      3
+#define NUMS_PLOTS 3
 
 /**
  * Цвет RGB
  */
-struct ColorDraw
-{
-    double r;
-    double g;
-    double b;
+struct ColorDraw {
+  double r;
+  double g;
+  double b;
 };
 
 /**
  * Массив точек графика
  */
-struct ArrayPointsXY
-{
-    size_t num_points;  // кол-во точек
-    double *x;          // массив для Х
-    double *y;          // массив для Y
+struct ArrayPointsXY {
+  size_t num_points; // кол-во точек
+  double *x;         // массив для Х
+  double *y;         // массив для Y
 };
 
 /**
  * Данные о корне
  */
-struct Intersection_points
-{
-    double a;                       // начало отрезка
-    double b;                       // конец отрезка
-    double root;                    // вычисленный корень
-    int id_F;                       // id
-    wchar_t *root_expr;             // выражение для вычисления
-    size_t nums_steps;              // кол-во шагов
-    size_t rpn_count;
-    struct Token rpn[MAX_TOKENS];
+struct Intersection_points {
+  double a;           // начало отрезка
+  double b;           // конец отрезка
+  double root;        // вычисленный корень
+  int id_F;           // id
+  wchar_t *root_expr; // выражение для вычисления
+  size_t nums_steps;  // кол-во шагов
+  size_t rpn_count;
+  struct Token rpn[MAX_TOKENS];
 };
 
 /**
  * Интеграл
  */
-struct IntegralProperties
-{
-    wchar_t *expr_s; // Формула подинтегральной функции
-    int from_f;      // От этого корня
-    int to_f;        // До этого
-    size_t rpn_count; 
-    struct Token rpn[MAX_TOKENS];
+struct IntegralProperties {
+  wchar_t *expr_s; // Формула подинтегральной функции
+  int from_f;      // От этого корня
+  int to_f;        // До этого
+  size_t rpn_count;
+  struct Token rpn[MAX_TOKENS];
 };
 
 /**
  * График функции
  */
-struct PlotDrawFun
-{
-    struct ArrayPointsXY points;
-    struct ColorDraw color;
-    wchar_t *title;
-    int fun_number;
+struct PlotDrawFun {
+  struct ArrayPointsXY points;
+  struct ColorDraw color;
+  wchar_t *title;
+  int fun_number;
 };
 
 /**
  * Настройки в JSON файле
  * (Для вычислений)
  */
-struct PlotProperties
-{
-    int f;
-    wchar_t *expr;
-    double start_x;
-    double end_x;
-    double intersection_point;
-    size_t num_points;
-    size_t rpn_count;
-    struct ColorDraw color;
-    struct Token rpn[MAX_TOKENS];
+struct PlotProperties {
+  int f;
+  wchar_t *expr;
+  double start_x;
+  double end_x;
+  double intersection_point;
+  size_t num_points;
+  size_t rpn_count;
+  struct ColorDraw color;
+  struct Token rpn[MAX_TOKENS];
 };
 
 /**
  * Настройки. Главная структура приложения
  */
-struct AppProperties
-{
-    struct PlotDrawFun *pdf;                            // 1. массивы для отрисовки графиков
-    struct PlotProperties *plots_props_array;           // 2.
-    struct Intersection_points *inters_points;          // массив корней
-    struct IntegralProperties *integral_props_array;    // массив интеграла
-    size_t size_prors_array;                            // размеры массивов (т-к malloc)
-    size_t size_arr_inters_points;
-    size_t size_integral_array;
-    double eps_1;                                       // точность для корней
-    double eps_2;                                       // точность для интеграла
+struct AppProperties {
+  struct PlotDrawFun *pdf; // 1. массивы для отрисовки графиков
+  struct PlotProperties *plots_props_array;        // 2.
+  struct Intersection_points *inters_points;       // массив корней
+  struct IntegralProperties *integral_props_array; // массив интеграла
+  size_t size_prors_array; // размеры массивов (т-к malloc)
+  size_t size_arr_inters_points;
+  size_t size_integral_array;
+  double eps_1; // точность для корней
+  double eps_2; // точность для интеграла
 };
 
 /**
  * Тесты
  */
-struct Tests_calc
-{
-    double a;
-    double b;
-    wchar_t *expr;
-    size_t rpn_count;
-    struct Token rpn[MAX_TOKENS];
+struct Tests_calc {
+  double a;
+  double b;
+  wchar_t *expr;
+  size_t rpn_count;
+  struct Token rpn[MAX_TOKENS];
 };
-
 
 /**
  * Создать график, сохранить в файл .png
  */
-void draw_plots(struct AppProperties *ap, size_t nums_draw_plots, const char *filename);
+void draw_plots(struct AppProperties *ap, size_t nums_draw_plots,
+                const char *filename);
 
 /**
  * Создать массив точек
  */
-struct ArrayPointsXY calculate_function(struct PlotProperties *pp, Func function);
+struct ArrayPointsXY calculate_function(struct PlotProperties *pp,
+                                        Func function);
 
 /**
  * Очистить память
  */
-void free_array_points(struct AppProperties *ap, size_t size);
+void free_app_memory(struct AppProperties *ap, size_t size);
 
 // ------------------ ПАРСИНГ JSON --------------------------------------------
 
 // Функция чтения JSON файла в строку
-char* read_JSON_file_to_string(const char *filename);
+char *read_JSON_file_to_string(const char *filename);
 
 // Функция для генерации JSON файла настроек
 int create_properties_json(const char *filename);
@@ -143,7 +136,7 @@ int create_properties_json(const char *filename);
 struct AppProperties parse_json(const char *filename);
 
 // Собрать данные для отрисовки графиков
-struct PlotDrawFun* make_properties(struct AppProperties *);
+struct PlotDrawFun *make_properties(struct AppProperties *);
 
 #ifdef __cplusplus
 }
